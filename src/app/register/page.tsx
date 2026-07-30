@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { SPECIALTIES, CARRIERS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
 
@@ -446,6 +447,7 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
 // ── Main page ──────────────────────────────────────────────────────
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [step, setStep] = useState<1 | 2>(1)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
   const [role, setRole] = useState<Role | null>(null)
@@ -485,7 +487,7 @@ export default function RegisterPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [done, setDone] = useState(false)
+  const [done, setDone] = useState(false) // briefly true while router navigates
 
   function toggleItem(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter(v => v !== value) : [...list, value])
@@ -540,6 +542,7 @@ export default function RegisterPage() {
     }
 
     setDone(true)
+    router.push('/register/success')
   }
 
   return (
@@ -869,50 +872,6 @@ export default function RegisterPage() {
         )}
 
         {/* ── DONE ── */}
-        {done && (
-          <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '50%',
-              background: BRAND.ice,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 20px',
-            }}>
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M4 11l4.5 4.5 9-9" stroke={BRAND.electric} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <h2 style={{
-              fontFamily: 'var(--font-serif), Georgia, serif',
-              fontSize: '22px', fontWeight: 600,
-              color: BRAND.midnight, letterSpacing: '-0.02em',
-              marginBottom: '10px',
-            }}>
-              Check your email
-            </h2>
-            <p style={{
-              fontSize: '14px', fontWeight: 300,
-              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-              color: '#64748B', lineHeight: 1.65,
-            }}>
-              We sent a confirmation link to{' '}
-              <strong style={{ fontWeight: 500, color: BRAND.midnight }}>{email}</strong>.
-              {' '}Click it to activate your account.
-            </p>
-            <div style={{
-              marginTop: '20px',
-              background: '#F8F7F4',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              fontSize: '12px',
-              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-              color: '#94A3B8',
-              lineHeight: 1.6,
-            }}>
-              Didn&apos;t get it? Check your spam folder or contact{' '}
-              <a href="mailto:hello@klarum.ca" style={{ color: BRAND.electric, textDecoration: 'none' }}>hello@klarum.ca</a>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
