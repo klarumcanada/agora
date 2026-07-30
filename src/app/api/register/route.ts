@@ -31,15 +31,15 @@ export async function POST(req: NextRequest) {
   const aum = formData.get('aum') as string | null
   const client_count = formData.get('client_count') as string | null
   const years_in_business = formData.get('years_in_business') as string | null
-  const carrier_mix = formData.get('carrier_mix') ? JSON.parse(formData.get('carrier_mix') as string) : null
-  const specializations = formData.get('specializations') ? JSON.parse(formData.get('specializations') as string) : null
+  const carrier_affiliations = formData.get('carrier_affiliations') ? JSON.parse(formData.get('carrier_affiliations') as string) : null
+  const products = formData.get('products') ? JSON.parse(formData.get('products') as string) : null
   const exit_timeline = formData.get('exit_timeline') as string | null
 
   // buyer
   const acquisition_budget = formData.get('acquisition_budget') as string | null
   const growth_stage = formData.get('growth_stage') as string | null
   const target_geography = formData.get('target_geography') ? JSON.parse(formData.get('target_geography') as string) : null
-  const target_specializations = formData.get('target_specializations') ? JSON.parse(formData.get('target_specializations') as string) : null
+  const target_products = formData.get('target_products') ? JSON.parse(formData.get('target_products') as string) : null
   const acquisition_timeline = formData.get('acquisition_timeline') as string | null
 
   if (!name || !email || !password || !phone || !city || !province || !account_type || !role) {
@@ -107,15 +107,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: profileError.message }, { status: 500 })
   }
 
-  // 4. Insert into agora_advisor_details
+  // 4. Insert into agora_advisor_details (individual) or agora_corp_details (corporation)
+  const detailsTable = account_type === 'corporation' ? 'agora_corp_details' : 'agora_advisor_details'
+
   const details =
     role === 'seller'
       ? {
           aum_cad: aum ? Number(aum) : null,
           client_count: client_count ? Number(client_count) : null,
           years_in_business: years_in_business ? Number(years_in_business) : null,
-          product_mix: carrier_mix,
-          specializations,
+          carrier_affiliations,
+          products,
           exit_timeline: exit_timeline || null,
           willing_to_stay,
         }
@@ -123,12 +125,12 @@ export async function POST(req: NextRequest) {
           acquisition_budget_cad: acquisition_budget ? Number(acquisition_budget) : null,
           growth_stage: growth_stage || null,
           target_geography,
-          target_specializations,
+          target_products,
           acquisition_timeline: acquisition_timeline || null,
         }
 
   const { error: detailsError } = await supabase
-    .from('agora_advisor_details')
+    .from(detailsTable)
     .insert({ profile_id: userId, ...details })
 
   if (detailsError) {

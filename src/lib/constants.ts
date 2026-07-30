@@ -9,25 +9,22 @@ export const PROVINCE_LABELS: Record<string, string> = {
   PE: 'PEI', QC: 'Quebec', SK: 'Saskatchewan', YT: 'Yukon',
 }
 
-export const SPECIALTIES = [
-  'Life insurance',
-  'Group benefits',
-  'Investments',
-  'Disability insurance',
-  'Critical illness',
-  'Long-term care',
-  'Segregated funds',
-  'Annuities',
+export const PRODUCTS = [
+  'Life Insurance',
+  'Disability Insurance',
+  'Critical Illness',
+  'Health & Benefits',
+  'Segregated Funds',
 ] as const
 
-export const CARRIERS = [
+export const CARRIER_AFFILIATIONS = [
   'Canada Life',
   'Sun Life',
   'Manulife',
+  'iA Financial',
   'Desjardins',
   'Empire Life',
   'Equitable Life',
-  'Industrial Alliance',
   'BMO Insurance',
   'RBC Insurance',
   'SSQ Insurance',

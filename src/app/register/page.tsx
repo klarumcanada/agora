@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { SPECIALTIES, CARRIERS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
+import { PRODUCTS, CARRIER_AFFILIATIONS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -536,15 +536,15 @@ export default function RegisterPage() {
   const [aum, setAum] = useState('')
   const [clientCount, setClientCount] = useState('')
   const [yearsInBusiness, setYearsInBusiness] = useState('')
-  const [carrierMix, setCarrierMix] = useState<string[]>([])
-  const [specializations, setSpecializations] = useState<string[]>([])
+  const [carrierAffiliations, setCarrierAffiliations] = useState<string[]>([])
+  const [products, setProducts] = useState<string[]>([])
   const [exitTimeline, setExitTimeline] = useState('')
 
   // Step 3 — buyer
   const [acquisitionBudget, setAcquisitionBudget] = useState('')
   const [growthStage, setGrowthStage] = useState('')
   const [targetGeography, setTargetGeography] = useState<string[]>([])
-  const [targetSpecializations, setTargetSpecializations] = useState<string[]>([])
+  const [targetProducts, setTargetProducts] = useState<string[]>([])
   const [acquisitionTimeline, setAcquisitionTimeline] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
@@ -638,14 +638,14 @@ export default function RegisterPage() {
       }
       if (clientCount) fd.append('client_count', clientCount)
       if (yearsInBusiness) fd.append('years_in_business', yearsInBusiness)
-      if (carrierMix.length) fd.append('carrier_mix', JSON.stringify(carrierMix))
-      if (specializations.length) fd.append('specializations', JSON.stringify(specializations))
+      if (carrierAffiliations.length) fd.append('carrier_affiliations', JSON.stringify(carrierAffiliations))
+      if (products.length) fd.append('products', JSON.stringify(products))
       if (exitTimeline) fd.append('exit_timeline', exitTimeline)
     } else {
       if (acquisitionBudget) fd.append('acquisition_budget', acquisitionBudget)
       if (growthStage) fd.append('growth_stage', growthStage)
       if (targetGeography.length) fd.append('target_geography', JSON.stringify(targetGeography))
-      if (targetSpecializations.length) fd.append('target_specializations', JSON.stringify(targetSpecializations))
+      if (targetProducts.length) fd.append('target_products', JSON.stringify(targetProducts))
       if (acquisitionTimeline) fd.append('acquisition_timeline', acquisitionTimeline)
     }
 
@@ -940,12 +940,12 @@ export default function RegisterPage() {
                       </div>
                     </div>
 
-                    <Field label="Product / carrier mix">
-                      <MultiSelect options={CARRIERS} selected={carrierMix} onToggle={v => toggleItem(carrierMix, setCarrierMix, v)} placeholder="Select carriers" />
+                    <Field label="Carrier affiliations">
+                      <MultiSelect options={CARRIER_AFFILIATIONS} selected={carrierAffiliations} onToggle={v => toggleItem(carrierAffiliations, setCarrierAffiliations, v)} placeholder="Select carriers" />
                     </Field>
 
-                    <Field label="Specializations">
-                      <MultiSelect options={SPECIALTIES} selected={specializations} onToggle={v => toggleItem(specializations, setSpecializations, v)} placeholder="Select specializations" />
+                    <Field label="Products">
+                      <MultiSelect options={PRODUCTS} selected={products} onToggle={v => toggleItem(products, setProducts, v)} placeholder="Select product lines" />
                     </Field>
 
                     <Field label="Exit timeline">
@@ -975,8 +975,8 @@ export default function RegisterPage() {
                   <MultiSelect options={PROVINCES} selected={targetGeography} onToggle={v => toggleItem(targetGeography, setTargetGeography, v)} placeholder="Select provinces" />
                 </Field>
 
-                <Field label="Target specializations">
-                  <MultiSelect options={SPECIALTIES} selected={targetSpecializations} onToggle={v => toggleItem(targetSpecializations, setTargetSpecializations, v)} placeholder="Select specializations" />
+                <Field label="Target products">
+                  <MultiSelect options={PRODUCTS} selected={targetProducts} onToggle={v => toggleItem(targetProducts, setTargetProducts, v)} placeholder="Select product lines" />
                 </Field>
 
                 <Field label="Acquisition timeline">
