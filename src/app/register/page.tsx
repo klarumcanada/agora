@@ -1,13 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { SPECIALTIES, CARRIERS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
 
 const BRAND = {
   midnight: '#0D1B3E',
@@ -19,36 +14,312 @@ const BRAND = {
 type AccountType = 'individual' | 'corporation'
 type Role = 'seller' | 'buyer'
 
-function Logo() {
+// ── Shared UI components ───────────────────────────────────────────
+
+function Field({ label, hint, required, children }: {
+  label: string
+  hint?: string
+  required?: boolean
+  children: React.ReactNode
+}) {
   return (
-    <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
-      <svg width="38" height="26" viewBox="0 0 44 30" fill="none">
-        <rect x="1" y="1" width="3.5" height="28" fill="white" />
-        <path d="M4.5 15 L18 1" stroke="white" strokeWidth="3" strokeLinecap="square" />
-        <path d="M4.5 15 L18 29" stroke="white" strokeWidth="3" strokeLinecap="square" />
-        <line x1="18" y1="4" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-        <line x1="18" y1="26" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-        <circle cx="34" cy="15" r="7" fill={BRAND.electric} />
-      </svg>
-      <span style={{
-        fontFamily: 'var(--font-serif), Georgia, serif',
-        fontSize: '22px',
-        fontWeight: 600,
-        color: 'white',
-        letterSpacing: '-0.02em',
-      }}>
-        klarum
-      </span>
-    </Link>
+    <div style={{ marginBottom: '20px' }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: '13px',
+          fontWeight: 500,
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          color: BRAND.midnight,
+          marginBottom: '7px',
+          letterSpacing: '0.01em',
+        }}>
+          {label}
+          {required && <span style={{ color: '#DC2626', marginLeft: '3px' }}>*</span>}
+        </label>
+      )}
+      {hint && (
+        <p style={{ fontSize: '12px', color: '#94A3B8', fontFamily: 'var(--font-sans), DM Sans, sans-serif', marginBottom: '7px', marginTop: '-3px' }}>
+          {hint}
+        </p>
+      )}
+      {children}
+    </div>
   )
 }
 
-function SelectCard({
-  title,
-  subtitle,
-  selected,
-  onClick,
-}: {
+function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, prefix }: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+  autoComplete?: string
+  prefix?: string
+}) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ position: 'relative' }}>
+      {prefix && (
+        <span style={{
+          position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+          fontSize: '14px', color: '#94A3B8',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif', pointerEvents: 'none',
+        }}>
+          {prefix}
+        </span>
+      )}
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        style={{
+          width: '100%',
+          padding: prefix ? '11px 12px 11px 26px' : '11px 12px',
+          fontSize: '14px',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          borderRadius: '8px',
+          border: focused ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+          background: 'white',
+          color: BRAND.midnight,
+          outline: 'none',
+          boxSizing: 'border-box',
+          transition: 'border-color .15s',
+        }}
+      />
+    </div>
+  )
+}
+
+function SelectInput({ value, onChange, children }: {
+  value: string
+  onChange: (v: string) => void
+  children: React.ReactNode
+}) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={{
+        width: '100%',
+        padding: '11px 12px',
+        fontSize: '14px',
+        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+        borderRadius: '8px',
+        border: focused ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+        background: 'white',
+        color: BRAND.midnight,
+        outline: 'none',
+        appearance: 'auto',
+        boxSizing: 'border-box',
+        transition: 'border-color .15s',
+      }}
+    >
+      {children}
+    </select>
+  )
+}
+
+function MultiSelect({ options, selected, onToggle, placeholder }: {
+  options: readonly string[]
+  selected: string[]
+  onToggle: (v: string) => void
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function outside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', outside)
+    return () => document.removeEventListener('mousedown', outside)
+  }, [])
+
+  const triggerLabel = selected.length === 0
+    ? placeholder
+    : selected.length === 1
+    ? selected[0]
+    : `${selected.length} selected`
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          padding: '11px 14px',
+          fontSize: '14px',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          borderRadius: open ? '8px 8px 0 0' : '8px',
+          border: open ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+          background: 'white',
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          transition: 'border-color .15s',
+          boxSizing: 'border-box',
+        }}
+      >
+        <span style={{ color: selected.length === 0 ? '#94A3B8' : BRAND.midnight }}>{triggerLabel}</span>
+        <span style={{ fontSize: '10px', color: '#94A3B8' }}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: 'white',
+          border: `1.5px solid ${BRAND.electric}`,
+          borderTop: 'none',
+          borderRadius: '0 0 8px 8px',
+          zIndex: 50,
+          maxHeight: '220px',
+          overflowY: 'auto',
+        }}>
+          {options.map(opt => {
+            const active = selected.includes(opt)
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onToggle(opt)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  background: active ? '#EFF6FF' : 'white',
+                  border: 'none',
+                  borderBottom: '1px solid #F1F5F9',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background .1s',
+                }}
+              >
+                <span style={{
+                  width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+                  border: active ? `2px solid ${BRAND.electric}` : '1.5px solid #CBD5E1',
+                  background: active ? BRAND.electric : 'white',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all .1s',
+                }}>
+                  {active && (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span style={{ fontSize: '14px', color: BRAND.midnight, fontFamily: 'var(--font-sans), DM Sans, sans-serif' }}>
+                  {opt}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {selected.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+          {selected.map(s => (
+            <span key={s} style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '4px 10px', fontSize: '12px',
+              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+              borderRadius: '20px',
+              background: BRAND.ice, color: BRAND.navy,
+              border: `1px solid ${BRAND.electric}`, fontWeight: 500,
+            }}>
+              {s}
+              <button
+                type="button"
+                onClick={() => onToggle(s)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '0 0 0 5px', color: BRAND.electric, fontSize: '14px', lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TimelineChips({ selected, onSelect }: {
+  selected: string
+  onSelect: (v: string) => void
+}) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      {TIMELINES.map(t => {
+        const active = selected === t
+        return (
+          <button
+            key={t}
+            type="button"
+            onClick={() => onSelect(active ? '' : t)}
+            style={{
+              padding: '8px 14px',
+              fontSize: '13px',
+              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+              borderRadius: '8px',
+              border: active ? `2px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+              background: active ? BRAND.ice : 'white',
+              color: active ? BRAND.navy : '#64748B',
+              cursor: 'pointer',
+              fontWeight: active ? 500 : 400,
+              transition: 'all .15s',
+            }}
+          >
+            {t}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      margin: '28px 0 24px',
+    }}>
+      <div style={{ flex: 1, height: '1px', background: '#E2E6F0' }} />
+      <span style={{
+        fontSize: '11px',
+        fontWeight: 500,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: '#94A3B8',
+        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+        whiteSpace: 'nowrap',
+      }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: '1px', background: '#E2E6F0' }} />
+    </div>
+  )
+}
+
+// ── Step 1 card select ─────────────────────────────────────────────
+
+function SelectCard({ title, subtitle, selected, onClick }: {
   title: string
   subtitle: string
   selected: boolean
@@ -91,102 +362,149 @@ function SelectCard({
   )
 }
 
-function QuestionLabel({ children }: { children: React.ReactNode }) {
+// ── Logo ───────────────────────────────────────────────────────────
+
+function Logo() {
   return (
-    <div style={{
-      fontSize: '13px',
-      fontWeight: 500,
-      fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-      color: BRAND.midnight,
-      marginBottom: '10px',
-    }}>
-      {children}
+    <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
+      <svg width="38" height="26" viewBox="0 0 44 30" fill="none">
+        <rect x="1" y="1" width="3.5" height="28" fill="white" />
+        <path d="M4.5 15 L18 1" stroke="white" strokeWidth="3" strokeLinecap="square" />
+        <path d="M4.5 15 L18 29" stroke="white" strokeWidth="3" strokeLinecap="square" />
+        <line x1="18" y1="4" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
+        <line x1="18" y1="26" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
+        <circle cx="34" cy="15" r="7" fill={BRAND.electric} />
+      </svg>
+      <span style={{
+        fontFamily: 'var(--font-serif), Georgia, serif',
+        fontSize: '22px',
+        fontWeight: 600,
+        color: 'white',
+        letterSpacing: '-0.02em',
+      }}>
+        klarum
+      </span>
+    </Link>
+  )
+}
+
+// ── Step indicator ─────────────────────────────────────────────────
+
+function StepIndicator({ step }: { step: 1 | 2 }) {
+  return (
+    <div style={{ marginBottom: '28px' }}>
+      <div style={{
+        fontSize: '11px',
+        fontWeight: 500,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: '#94A3B8',
+        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+        marginBottom: '10px',
+      }}>
+        Step {step} of 2
+      </div>
+      <h1 style={{
+        fontFamily: 'var(--font-serif), Georgia, serif',
+        fontSize: '26px',
+        fontWeight: 600,
+        color: BRAND.midnight,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.2,
+        margin: 0,
+      }}>
+        {step === 1 ? 'Create your account' : 'Your profile'}
+      </h1>
     </div>
   )
 }
 
-function InputField({
-  label,
-  type = 'text',
-  value,
-  onChange,
-  placeholder,
-  autoComplete,
-}: {
-  label: string
-  type?: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  autoComplete?: string
-}) {
-  const [focused, setFocused] = useState(false)
-  return (
-    <div>
-      <label style={{
-        display: 'block',
-        fontSize: '13px',
-        fontWeight: 500,
-        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-        color: BRAND.midnight,
-        marginBottom: '6px',
-      }}>
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        style={{
-          width: '100%',
-          padding: '11px 12px',
-          fontSize: '14px',
-          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-          borderRadius: '8px',
-          border: focused ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
-          background: 'white',
-          color: BRAND.midnight,
-          outline: 'none',
-          boxSizing: 'border-box',
-          transition: 'border-color .15s',
-        }}
-      />
-    </div>
-  )
-}
+// ── Main page ──────────────────────────────────────────────────────
 
 export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
   const [role, setRole] = useState<Role | null>(null)
 
+  // Step 2 — basic
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [city, setCity] = useState('')
+  const [province, setProvince] = useState('')
+
+  // Step 2 — seller
+  const [aum, setAum] = useState('')
+  const [clientCount, setClientCount] = useState('')
+  const [yearsInBusiness, setYearsInBusiness] = useState('')
+  const [carrierMix, setCarrierMix] = useState<string[]>([])
+  const [specializations, setSpecializations] = useState<string[]>([])
+  const [exitTimeline, setExitTimeline] = useState('')
+
+  // Step 2 — buyer
+  const [acquisitionBudget, setAcquisitionBudget] = useState('')
+  const [growthStage, setGrowthStage] = useState('')
+  const [targetGeography, setTargetGeography] = useState<string[]>([])
+  const [targetSpecializations, setTargetSpecializations] = useState<string[]>([])
+  const [acquisitionTimeline, setAcquisitionTimeline] = useState('')
+
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
+  function toggleItem(list: string[], setList: (v: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter(v => v !== value) : [...list, value])
+  }
+
   const canContinue = accountType !== null && role !== null
 
-  async function handleCreate(e: React.FormEvent) {
+  const step2Valid = name.trim() && email.trim() && password.length >= 8 && phone.trim() && city.trim() && province
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name || !email || !password || !accountType || !role) return
-    setLoading(true)
+    if (!step2Valid || !accountType || !role) return
     setError(null)
-    const { error: err } = await supabase.auth.signUp({
-      email,
+    setSubmitting(true)
+
+    const payload = {
+      account_type: accountType,
+      role,
+      name: name.trim(),
+      email: email.trim(),
       password,
-      options: {
-        data: { name, account_type: accountType, role },
-      },
+      phone: phone.trim(),
+      city: city.trim(),
+      province,
+      // seller
+      aum: aum ? Number(aum) : null,
+      client_count: clientCount ? Number(clientCount) : null,
+      years_in_business: yearsInBusiness ? Number(yearsInBusiness) : null,
+      carrier_mix: carrierMix.length ? carrierMix : null,
+      specializations: specializations.length ? specializations : null,
+      exit_timeline: exitTimeline || null,
+      // buyer
+      acquisition_budget: acquisitionBudget ? Number(acquisitionBudget) : null,
+      growth_stage: growthStage || null,
+      target_geography: targetGeography.length ? targetGeography : null,
+      target_specializations: targetSpecializations.length ? targetSpecializations : null,
+      acquisition_timeline: acquisitionTimeline || null,
+    }
+
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     })
-    setLoading(false)
-    if (err) { setError(err.message); return }
+
+    const data = await res.json()
+    setSubmitting(false)
+
+    if (!res.ok) {
+      setError(data.error ?? 'Something went wrong. Please try again.')
+      return
+    }
+
     setDone(true)
   }
 
@@ -197,8 +515,10 @@ export default function RegisterPage() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
+      paddingTop: '48px',
+      paddingBottom: '64px',
+      paddingLeft: '24px',
+      paddingRight: '24px',
     }}>
       <Logo />
 
@@ -214,34 +534,17 @@ export default function RegisterPage() {
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <>
-            <div style={{ marginBottom: '28px' }}>
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: '#94A3B8',
-                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                marginBottom: '10px',
-              }}>
-                Step 1 of 2
-              </div>
-              <h1 style={{
-                fontFamily: 'var(--font-serif), Georgia, serif',
-                fontSize: '26px',
-                fontWeight: 600,
-                color: BRAND.midnight,
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2,
-              }}>
-                Create your account
-              </h1>
-            </div>
+            <StepIndicator step={1} />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {/* Q1 */}
               <div>
-                <QuestionLabel>How would you like to register?</QuestionLabel>
+                <div style={{
+                  fontSize: '13px', fontWeight: 500,
+                  fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                  color: BRAND.midnight, marginBottom: '10px',
+                }}>
+                  How would you like to register?
+                </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <SelectCard
                     title="Individual Advisor"
@@ -258,9 +561,14 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Q2 */}
               <div>
-                <QuestionLabel>What are you looking to do?</QuestionLabel>
+                <div style={{
+                  fontSize: '13px', fontWeight: 500,
+                  fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                  color: BRAND.midnight, marginBottom: '10px',
+                }}>
+                  What are you looking to do?
+                </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <SelectCard
                     title="Sell a book of business"
@@ -317,22 +625,17 @@ export default function RegisterPage() {
 
         {/* ── STEP 2 ── */}
         {step === 2 && !done && (
-          <>
+          <form onSubmit={handleSubmit}>
             <button
               type="button"
               onClick={() => setStep(1)}
               style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
+                background: 'none', border: 'none', padding: 0,
                 marginBottom: '20px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
                 fontSize: '13px',
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                color: '#94A3B8',
-                cursor: 'pointer',
+                color: '#94A3B8', cursor: 'pointer',
               }}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -341,125 +644,221 @@ export default function RegisterPage() {
               Back
             </button>
 
-            <div style={{ marginBottom: '28px' }}>
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: '#94A3B8',
-                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                marginBottom: '10px',
-              }}>
-                Step 2 of 2
+            <StepIndicator step={2} />
+
+            {/* ── Basic profile ── */}
+            <Field label="Full name" required>
+              <TextInput value={name} onChange={setName} placeholder="Jane Smith" autoComplete="name" />
+            </Field>
+
+            <Field label="Email" required>
+              <TextInput value={email} onChange={setEmail} type="email" placeholder="you@example.com" autoComplete="email" />
+            </Field>
+
+            <Field label="Password" required hint="Minimum 8 characters">
+              <TextInput value={password} onChange={setPassword} type="password" placeholder="••••••••" autoComplete="new-password" />
+            </Field>
+
+            <Field label="Phone" required>
+              <TextInput value={phone} onChange={setPhone} type="tel" placeholder="6475551234" autoComplete="tel" />
+            </Field>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <Field label="City" required>
+                  <TextInput value={city} onChange={setCity} placeholder="Toronto" autoComplete="address-level2" />
+                </Field>
               </div>
-              <h1 style={{
-                fontFamily: 'var(--font-serif), Georgia, serif',
-                fontSize: '26px',
-                fontWeight: 600,
-                color: BRAND.midnight,
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2,
-              }}>
-                Your details
-              </h1>
+              <div style={{ flex: 1 }}>
+                <Field label="Province" required>
+                  <SelectInput value={province} onChange={setProvince}>
+                    <option value="">Select…</option>
+                    {PROVINCES.map(p => (
+                      <option key={p} value={p}>{PROVINCE_LABELS[p]}</option>
+                    ))}
+                  </SelectInput>
+                </Field>
+              </div>
             </div>
 
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <InputField
-                label="Full name"
-                value={name}
-                onChange={setName}
-                placeholder="Jane Smith"
-                autoComplete="name"
-              />
-              <InputField
-                label="Email"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="you@example.com"
-                autoComplete="email"
-              />
-              <InputField
-                label="Password"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="At least 8 characters"
-                autoComplete="new-password"
-              />
+            {/* ── Seller fields ── */}
+            {role === 'seller' && (
+              <>
+                <SectionDivider label="About your book" />
 
-              {error && (
-                <p style={{
-                  fontSize: '13px',
-                  fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                  color: '#EF4444',
-                }}>
-                  {error}
-                </p>
-              )}
+                <Field label="Estimated AUM (CAD)">
+                  <TextInput value={aum} onChange={setAum} type="number" placeholder="e.g. 25000000" prefix="$" />
+                </Field>
 
-              <button
-                type="submit"
-                disabled={loading || !name || !email || !password}
-                style={{
-                  marginTop: '4px',
-                  width: '100%',
-                  padding: '13px',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: loading || !name || !email || !password ? '#E5E7EB' : BRAND.electric,
-                  color: loading || !name || !email || !password ? '#9CA3AF' : '#fff',
-                  cursor: loading || !name || !email || !password ? 'not-allowed' : 'pointer',
-                  transition: 'background .15s',
-                }}
-              >
-                {loading ? 'Creating account…' : 'Create account'}
-              </button>
-            </form>
-          </>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <Field label="Number of clients">
+                      <TextInput value={clientCount} onChange={setClientCount} type="number" placeholder="e.g. 150" />
+                    </Field>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Field label="Years in business">
+                      <TextInput value={yearsInBusiness} onChange={setYearsInBusiness} type="number" placeholder="e.g. 18" />
+                    </Field>
+                  </div>
+                </div>
+
+                <Field label="Product / carrier mix">
+                  <MultiSelect
+                    options={CARRIERS}
+                    selected={carrierMix}
+                    onToggle={v => toggleItem(carrierMix, setCarrierMix, v)}
+                    placeholder="Select carriers"
+                  />
+                </Field>
+
+                <Field label="Specializations">
+                  <MultiSelect
+                    options={SPECIALTIES}
+                    selected={specializations}
+                    onToggle={v => toggleItem(specializations, setSpecializations, v)}
+                    placeholder="Select specializations"
+                  />
+                </Field>
+
+                <Field label="Exit timeline">
+                  <TimelineChips selected={exitTimeline} onSelect={setExitTimeline} />
+                </Field>
+              </>
+            )}
+
+            {/* ── Buyer fields ── */}
+            {role === 'buyer' && (
+              <>
+                <SectionDivider label="What you're looking for" />
+
+                <Field label="Acquisition budget (CAD)">
+                  <TextInput value={acquisitionBudget} onChange={setAcquisitionBudget} type="number" placeholder="e.g. 1000000" prefix="$" />
+                </Field>
+
+                <Field label="Growth stage">
+                  <SelectInput value={growthStage} onChange={setGrowthStage}>
+                    <option value="">Select…</option>
+                    <option value="newer_advisor">Newer advisor</option>
+                    <option value="established_advisor">Established advisor</option>
+                  </SelectInput>
+                </Field>
+
+                <Field label="Target geography">
+                  <MultiSelect
+                    options={PROVINCES}
+                    selected={targetGeography}
+                    onToggle={v => toggleItem(targetGeography, setTargetGeography, v)}
+                    placeholder="Select provinces"
+                  />
+                </Field>
+
+                <Field label="Target specializations">
+                  <MultiSelect
+                    options={SPECIALTIES}
+                    selected={targetSpecializations}
+                    onToggle={v => toggleItem(targetSpecializations, setTargetSpecializations, v)}
+                    placeholder="Select specializations"
+                  />
+                </Field>
+
+                <Field label="Acquisition timeline">
+                  <TimelineChips selected={acquisitionTimeline} onSelect={setAcquisitionTimeline} />
+                </Field>
+              </>
+            )}
+
+            {error && (
+              <p style={{
+                fontSize: '13px',
+                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                color: '#EF4444',
+                marginBottom: '16px',
+              }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting || !step2Valid}
+              style={{
+                marginTop: '8px',
+                width: '100%',
+                padding: '13px',
+                fontSize: '15px',
+                fontWeight: 500,
+                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                borderRadius: '8px',
+                border: 'none',
+                background: submitting || !step2Valid ? '#E5E7EB' : BRAND.electric,
+                color: submitting || !step2Valid ? '#9CA3AF' : '#fff',
+                cursor: submitting || !step2Valid ? 'not-allowed' : 'pointer',
+                transition: 'background .15s',
+              }}
+            >
+              {submitting ? 'Creating profile…' : 'Create profile'}
+            </button>
+
+            <p style={{
+              marginTop: '16px',
+              fontSize: '12px',
+              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+              color: '#94A3B8',
+              lineHeight: 1.6,
+              textAlign: 'center',
+            }}>
+              By creating an account you agree to our{' '}
+              <Link href="/terms" style={{ color: BRAND.electric, textDecoration: 'none' }}>terms of service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" style={{ color: BRAND.electric, textDecoration: 'none' }}>privacy policy</Link>.
+            </p>
+          </form>
         )}
 
         {/* ── DONE ── */}
         {done && (
           <div style={{ textAlign: 'center', padding: '16px 0' }}>
             <div style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '50%',
+              width: '48px', height: '48px', borderRadius: '50%',
               background: BRAND.ice,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 20px',
             }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M4 10l4 4 8-8" stroke={BRAND.electric} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M4 11l4.5 4.5 9-9" stroke={BRAND.electric} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <h2 style={{
               fontFamily: 'var(--font-serif), Georgia, serif',
-              fontSize: '22px',
-              fontWeight: 600,
-              color: BRAND.midnight,
-              letterSpacing: '-0.02em',
+              fontSize: '22px', fontWeight: 600,
+              color: BRAND.midnight, letterSpacing: '-0.02em',
               marginBottom: '10px',
             }}>
               Check your email
             </h2>
             <p style={{
-              fontSize: '14px',
-              fontWeight: 300,
+              fontSize: '14px', fontWeight: 300,
               fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-              color: '#64748B',
+              color: '#64748B', lineHeight: 1.65,
+            }}>
+              We sent a confirmation link to{' '}
+              <strong style={{ fontWeight: 500, color: BRAND.midnight }}>{email}</strong>.
+              {' '}Click it to activate your account.
+            </p>
+            <div style={{
+              marginTop: '20px',
+              background: '#F8F7F4',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              fontSize: '12px',
+              fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+              color: '#94A3B8',
               lineHeight: 1.6,
             }}>
-              We sent a confirmation link to <strong style={{ fontWeight: 500, color: BRAND.midnight }}>{email}</strong>. Click it to activate your account.
-            </p>
+              Didn&apos;t get it? Check your spam folder or contact{' '}
+              <a href="mailto:hello@klarum.ca" style={{ color: BRAND.electric, textDecoration: 'none' }}>hello@klarum.ca</a>
+            </div>
           </div>
         )}
       </div>
