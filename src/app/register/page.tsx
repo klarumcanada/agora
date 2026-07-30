@@ -321,46 +321,68 @@ function SectionDivider({ label }: { label: string }) {
 
 // ── Step 1 card select ─────────────────────────────────────────────
 
-function SelectCard({ title, subtitle, selected, onClick }: {
-  title: string
-  subtitle: string
-  selected: boolean
-  onClick: () => void
+function RadioOption({ name, value, label, description, checked, onChange }: {
+  name: string
+  value: string
+  label: string
+  description: string
+  checked: boolean
+  onChange: () => void
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        flex: 1,
-        padding: selected ? '15px' : '16px',
-        background: selected ? BRAND.ice : '#fff',
-        border: selected ? `2px solid ${BRAND.electric}` : '1px solid #E2E6F0',
-        borderRadius: '10px',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'all .15s',
-      }}
-    >
+    <label style={{ display: 'flex', gap: '12px', padding: '12px 0', cursor: 'pointer' }}>
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        style={{ display: 'none' }}
+      />
       <div style={{
-        fontSize: '14px',
-        fontWeight: 500,
-        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-        color: selected ? BRAND.navy : BRAND.midnight,
-        marginBottom: '4px',
+        marginTop: '2px',
+        flexShrink: 0,
+        width: '18px',
+        height: '18px',
+        borderRadius: '50%',
+        border: checked ? `2px solid ${BRAND.electric}` : '1.5px solid #CBD5E1',
+        background: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'border-color .15s',
       }}>
-        {title}
+        {checked && (
+          <div style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: BRAND.electric,
+          }} />
+        )}
       </div>
-      <div style={{
-        fontSize: '12px',
-        fontWeight: 300,
-        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-        color: selected ? BRAND.navy : '#94A3B8',
-        lineHeight: 1.45,
-      }}>
-        {subtitle}
+      <div>
+        <div style={{
+          fontSize: '14px',
+          fontWeight: checked ? 500 : 400,
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          color: BRAND.midnight,
+          marginBottom: '3px',
+          transition: 'font-weight .15s',
+        }}>
+          {label}
+        </div>
+        <div style={{
+          fontSize: '13px',
+          fontWeight: 300,
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          color: '#94A3B8',
+          lineHeight: 1.45,
+        }}>
+          {description}
+        </div>
       </div>
-    </button>
+    </label>
   )
 }
 
@@ -427,6 +449,16 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
   const [role, setRole] = useState<Role | null>(null)
+  const [q2Visible, setQ2Visible] = useState(false)
+
+  useEffect(() => {
+    if (accountType !== null && !q2Visible) {
+      const id = requestAnimationFrame(() =>
+        requestAnimationFrame(() => setQ2Visible(true))
+      )
+      return () => cancelAnimationFrame(id)
+    }
+  }, [accountType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Step 2 — basic
   const [name, setName] = useState('')
@@ -538,54 +570,72 @@ export default function RegisterPage() {
           <>
             <StepIndicator step={1} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               <div>
                 <div style={{
                   fontSize: '13px', fontWeight: 500,
                   fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                  color: BRAND.midnight, marginBottom: '10px',
+                  color: BRAND.midnight, marginBottom: '4px',
                 }}>
                   How would you like to register?
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <SelectCard
-                    title="Individual Advisor"
-                    subtitle="For licensed advisors registering personally"
-                    selected={accountType === 'individual'}
-                    onClick={() => setAccountType('individual')}
+                <div style={{ borderTop: '1px solid #F1F5F9', marginTop: '4px' }}>
+                  <RadioOption
+                    name="account_type"
+                    value="individual"
+                    label="Individual Advisor"
+                    description="For licensed advisors registering personally"
+                    checked={accountType === 'individual'}
+                    onChange={() => setAccountType('individual')}
                   />
-                  <SelectCard
-                    title="Corporation"
-                    subtitle="For incorporated advisors and firms"
-                    selected={accountType === 'corporation'}
-                    onClick={() => setAccountType('corporation')}
-                  />
+                  <div style={{ borderTop: '1px solid #F1F5F9' }}>
+                    <RadioOption
+                      name="account_type"
+                      value="corporation"
+                      label="Corporation"
+                      description="For incorporated advisors and firms"
+                      checked={accountType === 'corporation'}
+                      onChange={() => setAccountType('corporation')}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
+              {accountType !== null && (
                 <div style={{
-                  fontSize: '13px', fontWeight: 500,
-                  fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                  color: BRAND.midnight, marginBottom: '10px',
+                  opacity: q2Visible ? 1 : 0,
+                  transform: q2Visible ? 'none' : 'translateY(8px)',
+                  transition: 'opacity 0.25s ease, transform 0.25s ease',
                 }}>
-                  What are you looking to do?
+                  <div style={{
+                    fontSize: '13px', fontWeight: 500,
+                    fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                    color: BRAND.midnight, marginBottom: '4px',
+                  }}>
+                    What are you looking to do?
+                  </div>
+                  <div style={{ borderTop: '1px solid #F1F5F9', marginTop: '4px' }}>
+                    <RadioOption
+                      name="role"
+                      value="seller"
+                      label="Sell a book of business"
+                      description="You're planning to exit or reduce your practice"
+                      checked={role === 'seller'}
+                      onChange={() => setRole('seller')}
+                    />
+                    <div style={{ borderTop: '1px solid #F1F5F9' }}>
+                      <RadioOption
+                        name="role"
+                        value="buyer"
+                        label="Buy a book of business"
+                        description="You're looking to grow by acquiring a book"
+                        checked={role === 'buyer'}
+                        onChange={() => setRole('buyer')}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <SelectCard
-                    title="Sell a book of business"
-                    subtitle="You're planning to exit or reduce your practice"
-                    selected={role === 'seller'}
-                    onClick={() => setRole('seller')}
-                  />
-                  <SelectCard
-                    title="Buy a book of business"
-                    subtitle="You're looking to grow by acquiring a book"
-                    selected={role === 'buyer'}
-                    onClick={() => setRole('buyer')}
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <button
