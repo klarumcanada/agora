@@ -491,7 +491,7 @@ export default function RegisterPage() {
       acquisition_timeline: acquisitionTimeline || null,
     }
 
-    const res = await fetch('/api/register', {
+    const res = await fetch('/agora/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
