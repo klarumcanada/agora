@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { calculateValuation } from '@/lib/valuation'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -15,7 +16,18 @@ export async function POST(req: NextRequest) {
   const province = formData.get('province') as string | null
   const avatarFile = formData.get('avatar') as File | null
 
-  // seller
+  // seller — valuation
+  const valuation_method = formData.get('valuation_method') as string | null
+  const willing_to_stay = formData.get('willing_to_stay') === 'true'
+  const life_revenue = formData.get('life_revenue') as string | null
+  const disability_revenue = formData.get('disability_revenue') as string | null
+  const ci_revenue = formData.get('ci_revenue') as string | null
+  const health_revenue = formData.get('health_revenue') as string | null
+  const seg_funds_revenue = formData.get('seg_funds_revenue') as string | null
+  const total_policies_v = formData.get('total_policies') as string | null
+  const active_policies_v = formData.get('active_policies') as string | null
+
+  // seller — book details
   const aum = formData.get('aum') as string | null
   const client_count = formData.get('client_count') as string | null
   const years_in_business = formData.get('years_in_business') as string | null
@@ -105,6 +117,7 @@ export async function POST(req: NextRequest) {
           product_mix: carrier_mix,
           specializations,
           exit_timeline: exit_timeline || null,
+          willing_to_stay,
         }
       : {
           acquisition_budget_cad: acquisition_budget ? Number(acquisition_budget) : null,
@@ -121,6 +134,49 @@ export async function POST(req: NextRequest) {
   if (detailsError) {
     await supabase.auth.admin.deleteUser(userId)
     return NextResponse.json({ error: detailsError.message }, { status: 500 })
+  }
+
+  // 5. If calculator mode, save book revenue + valuation
+  if (role === 'seller' && valuation_method === 'calculator') {
+    const revenue = {
+      life:             life_revenue ? Number(life_revenue) : 0,
+      disability:       disability_revenue ? Number(disability_revenue) : 0,
+      critical_illness: ci_revenue ? Number(ci_revenue) : 0,
+      health:           health_revenue ? Number(health_revenue) : 0,
+      seg_funds:        seg_funds_revenue ? Number(seg_funds_revenue) : 0,
+    }
+
+    const { data: revenueRow, error: revErr } = await supabase
+      .from('agora_book_revenue')
+      .insert({
+        profile_id: userId,
+        life_insurance:       revenue.life || null,
+        disability_insurance: revenue.disability || null,
+        critical_illness:     revenue.critical_illness || null,
+        health_benefits:      revenue.health || null,
+        seg_funds:            revenue.seg_funds || null,
+        total_policies:  total_policies_v ? Number(total_policies_v) : null,
+        active_policies: active_policies_v ? Number(active_policies_v) : null,
+        willing_to_stay,
+      })
+      .select()
+      .single()
+
+    if (!revErr && revenueRow) {
+      const { low_value, high_value } = calculateValuation(
+        revenue,
+        total_policies_v ? Number(total_policies_v) : null,
+        active_policies_v ? Number(active_policies_v) : null,
+        willing_to_stay
+      )
+      await supabase.from('agora_valuations').insert({
+        profile_id: userId,
+        book_revenue_id: revenueRow.id,
+        low_value,
+        high_value,
+        source: 'self_reported',
+      })
+    }
   }
 
   return NextResponse.json({ ok: true })
