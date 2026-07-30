@@ -301,7 +301,7 @@ function SectionDivider({ label }: { label: string }) {
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
-      margin: '28px 0 24px',
+      margin: '4px 0 24px',
     }}>
       <div style={{ flex: 1, height: '1px', background: '#E2E6F0' }} />
       <span style={{
@@ -320,7 +320,7 @@ function SectionDivider({ label }: { label: string }) {
   )
 }
 
-// ── Step 1 card select ─────────────────────────────────────────────
+// ── Radio option ───────────────────────────────────────────────────
 
 function RadioOption({ name, value, label, description, checked, onChange }: {
   name: string
@@ -354,12 +354,7 @@ function RadioOption({ name, value, label, description, checked, onChange }: {
         transition: 'border-color .15s',
       }}>
         {checked && (
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: BRAND.electric,
-          }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND.electric }} />
         )}
       </div>
       <div>
@@ -384,6 +379,112 @@ function RadioOption({ name, value, label, description, checked, onChange }: {
         </div>
       </div>
     </label>
+  )
+}
+
+// ── Avatar upload ──────────────────────────────────────────────────
+
+function AvatarUpload({ preview, onChange, isCorporation }: {
+  preview: string | null
+  onChange: (file: File, preview: string) => void
+  isCorporation: boolean
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [hovering, setHovering] = useState(false)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => {
+      if (ev.target?.result) onChange(file, ev.target.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        style={{
+          flexShrink: 0,
+          width: '72px',
+          height: '72px',
+          borderRadius: '50%',
+          border: preview ? 'none' : `2px dashed ${hovering ? BRAND.electric : '#CBD5E1'}`,
+          background: preview ? 'transparent' : (hovering ? BRAND.ice : '#F8FAFC'),
+          cursor: 'pointer',
+          padding: 0,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'border-color .15s, background .15s',
+          position: 'relative',
+        }}
+      >
+        {preview ? (
+          <>
+            <img
+              src={preview}
+              alt="Preview"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+            />
+            {hovering && (
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.38)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M12.5 2.5l3 3L5 16H2v-3L12.5 2.5z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
+          </>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 5v12M5 11h12" stroke={hovering ? BRAND.electric : '#94A3B8'} strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        )}
+      </button>
+
+      <div>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          style={{
+            background: 'none', border: 'none', padding: 0,
+            fontSize: '13px', fontWeight: 500,
+            fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+            color: BRAND.electric, cursor: 'pointer',
+            display: 'block', marginBottom: '4px',
+          }}
+        >
+          {preview
+            ? (isCorporation ? 'Change logo' : 'Change photo')
+            : (isCorporation ? 'Upload logo' : 'Upload photo')}
+        </button>
+        <span style={{
+          fontSize: '12px',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+          color: '#94A3B8',
+        }}>
+          JPG or PNG, max 5 MB
+        </span>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+    </div>
   )
 }
 
@@ -415,7 +516,13 @@ function Logo() {
 
 // ── Step indicator ─────────────────────────────────────────────────
 
-function StepIndicator({ step }: { step: 1 | 2 }) {
+function StepIndicator({ step, role }: { step: 1 | 2 | 3, role?: Role | null }) {
+  const heading =
+    step === 1 ? 'Create your account'
+    : step === 2 ? 'Your profile'
+    : role === 'seller' ? 'Your book'
+    : 'Your acquisition goals'
+
   return (
     <div style={{ marginBottom: '28px' }}>
       <div style={{
@@ -427,7 +534,7 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
         fontFamily: 'var(--font-sans), DM Sans, sans-serif',
         marginBottom: '10px',
       }}>
-        Step {step} of 2
+        Step {step} of 3
       </div>
       <h1 style={{
         fontFamily: 'var(--font-serif), Georgia, serif',
@@ -438,9 +545,33 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
         lineHeight: 1.2,
         margin: 0,
       }}>
-        {step === 1 ? 'Create your account' : 'Your profile'}
+        {heading}
       </h1>
     </div>
+  )
+}
+
+// ── Back button ────────────────────────────────────────────────────
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: 'none', border: 'none', padding: 0,
+        marginBottom: '20px',
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontSize: '13px',
+        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+        color: '#94A3B8', cursor: 'pointer',
+      }}
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Back
+    </button>
   )
 }
 
@@ -448,7 +579,7 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
   const [accountType, setAccountType] = useState<AccountType | null>(null)
   const [role, setRole] = useState<Role | null>(null)
   const [q2Visible, setQ2Visible] = useState(false)
@@ -462,15 +593,18 @@ export default function RegisterPage() {
     }
   }, [accountType]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Step 2 — basic
+  // Step 2 — profile
   const [name, setName] = useState('')
+  const [entityName, setEntityName] = useState('')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
   const [city, setCity] = useState('')
   const [province, setProvince] = useState('')
 
-  // Step 2 — seller
+  // Step 3 — seller
   const [aum, setAum] = useState('')
   const [clientCount, setClientCount] = useState('')
   const [yearsInBusiness, setYearsInBusiness] = useState('')
@@ -478,7 +612,7 @@ export default function RegisterPage() {
   const [specializations, setSpecializations] = useState<string[]>([])
   const [exitTimeline, setExitTimeline] = useState('')
 
-  // Step 2 — buyer
+  // Step 3 — buyer
   const [acquisitionBudget, setAcquisitionBudget] = useState('')
   const [growthStage, setGrowthStage] = useState('')
   const [targetGeography, setTargetGeography] = useState<string[]>([])
@@ -487,52 +621,54 @@ export default function RegisterPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [done, setDone] = useState(false) // briefly true while router navigates
 
   function toggleItem(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter(v => v !== value) : [...list, value])
   }
 
-  const canContinue = accountType !== null && role !== null
+  const canContinueStep1 = accountType !== null && role !== null
 
-  const step2Valid = name.trim() && email.trim() && password.length >= 8 && phone.trim() && city.trim() && province
+  const step2Valid = Boolean(
+    name.trim() &&
+    email.trim() &&
+    password.length >= 8 &&
+    phone.trim() &&
+    city.trim() &&
+    province &&
+    (accountType !== 'corporation' || entityName.trim())
+  )
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!step2Valid || !accountType || !role) return
+    if (!accountType || !role) return
     setError(null)
     setSubmitting(true)
 
-    const payload = {
-      account_type: accountType,
-      role,
-      name: name.trim(),
-      email: email.trim(),
-      password,
-      phone: phone.trim(),
-      city: city.trim(),
-      province,
-      // seller
-      aum: aum ? Number(aum) : null,
-      client_count: clientCount ? Number(clientCount) : null,
-      years_in_business: yearsInBusiness ? Number(yearsInBusiness) : null,
-      carrier_mix: carrierMix.length ? carrierMix : null,
-      specializations: specializations.length ? specializations : null,
-      exit_timeline: exitTimeline || null,
-      // buyer
-      acquisition_budget: acquisitionBudget ? Number(acquisitionBudget) : null,
-      growth_stage: growthStage || null,
-      target_geography: targetGeography.length ? targetGeography : null,
-      target_specializations: targetSpecializations.length ? targetSpecializations : null,
-      acquisition_timeline: acquisitionTimeline || null,
-    }
+    const fd = new FormData()
+    fd.append('account_type', accountType)
+    fd.append('role', role)
+    fd.append('name', name.trim())
+    fd.append('email', email.trim())
+    fd.append('password', password)
+    fd.append('phone', phone.trim())
+    fd.append('city', city.trim())
+    fd.append('province', province)
+    if (entityName.trim()) fd.append('entity_name', entityName.trim())
+    if (avatarFile) fd.append('avatar', avatarFile)
 
-    const res = await fetch('/agora/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+    if (aum) fd.append('aum', aum)
+    if (clientCount) fd.append('client_count', clientCount)
+    if (yearsInBusiness) fd.append('years_in_business', yearsInBusiness)
+    if (carrierMix.length) fd.append('carrier_mix', JSON.stringify(carrierMix))
+    if (specializations.length) fd.append('specializations', JSON.stringify(specializations))
+    if (exitTimeline) fd.append('exit_timeline', exitTimeline)
+    if (acquisitionBudget) fd.append('acquisition_budget', acquisitionBudget)
+    if (growthStage) fd.append('growth_stage', growthStage)
+    if (targetGeography.length) fd.append('target_geography', JSON.stringify(targetGeography))
+    if (targetSpecializations.length) fd.append('target_specializations', JSON.stringify(targetSpecializations))
+    if (acquisitionTimeline) fd.append('acquisition_timeline', acquisitionTimeline)
 
+    const res = await fetch('/agora/api/register', { method: 'POST', body: fd })
     const data = await res.json()
     setSubmitting(false)
 
@@ -541,7 +677,6 @@ export default function RegisterPage() {
       return
     }
 
-    setDone(true)
     router.push('/register/success')
   }
 
@@ -571,7 +706,7 @@ export default function RegisterPage() {
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <>
-            <StepIndicator step={1} />
+            <StepIndicator step={1} role={role} />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               <div>
@@ -643,7 +778,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              disabled={!canContinue}
+              disabled={!canContinueStep1}
               onClick={() => setStep(2)}
               style={{
                 marginTop: '28px',
@@ -654,9 +789,9 @@ export default function RegisterPage() {
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif',
                 borderRadius: '8px',
                 border: 'none',
-                background: canContinue ? BRAND.electric : '#E5E7EB',
-                color: canContinue ? '#fff' : '#9CA3AF',
-                cursor: canContinue ? 'pointer' : 'not-allowed',
+                background: canContinueStep1 ? BRAND.electric : '#E5E7EB',
+                color: canContinueStep1 ? '#fff' : '#9CA3AF',
+                cursor: canContinueStep1 ? 'pointer' : 'not-allowed',
                 transition: 'background .15s',
               }}
             >
@@ -679,30 +814,29 @@ export default function RegisterPage() {
         )}
 
         {/* ── STEP 2 ── */}
-        {step === 2 && !done && (
-          <form onSubmit={handleSubmit}>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              style={{
-                background: 'none', border: 'none', padding: 0,
-                marginBottom: '20px',
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                fontSize: '13px',
-                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                color: '#94A3B8', cursor: 'pointer',
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Back
-            </button>
+        {step === 2 && (
+          <>
+            <BackButton onClick={() => setStep(1)} />
+            <StepIndicator step={2} role={role} />
 
-            <StepIndicator step={2} />
+            <AvatarUpload
+              preview={avatarPreview}
+              onChange={(file, preview) => { setAvatarFile(file); setAvatarPreview(preview) }}
+              isCorporation={accountType === 'corporation'}
+            />
 
-            {/* ── Basic profile ── */}
-            <Field label="Full name" required>
+            {accountType === 'corporation' && (
+              <Field label="Entity name" required>
+                <TextInput
+                  value={entityName}
+                  onChange={setEntityName}
+                  placeholder="Acme Advisory Corp."
+                  autoComplete="organization"
+                />
+              </Field>
+            )}
+
+            <Field label={accountType === 'corporation' ? 'Contact name' : 'Full name'} required>
               <TextInput value={name} onChange={setName} placeholder="Jane Smith" autoComplete="name" />
             </Field>
 
@@ -736,11 +870,38 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* ── Seller fields ── */}
+            <button
+              type="button"
+              disabled={!step2Valid}
+              onClick={() => setStep(3)}
+              style={{
+                marginTop: '8px',
+                width: '100%',
+                padding: '13px',
+                fontSize: '15px',
+                fontWeight: 500,
+                fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+                borderRadius: '8px',
+                border: 'none',
+                background: step2Valid ? BRAND.electric : '#E5E7EB',
+                color: step2Valid ? '#fff' : '#9CA3AF',
+                cursor: step2Valid ? 'pointer' : 'not-allowed',
+                transition: 'background .15s',
+              }}
+            >
+              Continue
+            </button>
+          </>
+        )}
+
+        {/* ── STEP 3 ── */}
+        {step === 3 && (
+          <form onSubmit={handleSubmit}>
+            <BackButton onClick={() => setStep(2)} />
+            <StepIndicator step={3} role={role} />
+
             {role === 'seller' && (
               <>
-                <SectionDivider label="About your book" />
-
                 <Field label="Estimated AUM (CAD)">
                   <TextInput value={aum} onChange={setAum} type="number" placeholder="e.g. 25000000" prefix="$" />
                 </Field>
@@ -782,11 +943,8 @@ export default function RegisterPage() {
               </>
             )}
 
-            {/* ── Buyer fields ── */}
             {role === 'buyer' && (
               <>
-                <SectionDivider label="What you're looking for" />
-
                 <Field label="Acquisition budget (CAD)">
                   <TextInput value={acquisitionBudget} onChange={setAcquisitionBudget} type="number" placeholder="e.g. 1000000" prefix="$" />
                 </Field>
@@ -836,7 +994,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={submitting || !step2Valid}
+              disabled={submitting}
               style={{
                 marginTop: '8px',
                 width: '100%',
@@ -846,9 +1004,9 @@ export default function RegisterPage() {
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif',
                 borderRadius: '8px',
                 border: 'none',
-                background: submitting || !step2Valid ? '#E5E7EB' : BRAND.electric,
-                color: submitting || !step2Valid ? '#9CA3AF' : '#fff',
-                cursor: submitting || !step2Valid ? 'not-allowed' : 'pointer',
+                background: submitting ? '#E5E7EB' : BRAND.electric,
+                color: submitting ? '#9CA3AF' : '#fff',
+                cursor: submitting ? 'not-allowed' : 'pointer',
                 transition: 'background .15s',
               }}
             >
@@ -871,7 +1029,6 @@ export default function RegisterPage() {
           </form>
         )}
 
-        {/* ── DONE ── */}
       </div>
     </div>
   )
