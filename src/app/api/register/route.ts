@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     .from('agora_profiles')
     .insert({
       id: userId,
-      full_name: name,
+      name,
       email,
       phone,
       city,
@@ -54,7 +54,6 @@ export async function POST(req: NextRequest) {
     })
 
   if (profileError) {
-    // Roll back auth user so state doesn't get inconsistent
     await supabase.auth.admin.deleteUser(userId)
     return NextResponse.json({ error: profileError.message }, { status: 500 })
   }
@@ -62,12 +61,12 @@ export async function POST(req: NextRequest) {
   // 3. Insert into agora_advisor_details
   const details =
     role === 'seller'
-      ? { aum, client_count, years_in_business, carrier_mix, specializations, exit_timeline }
-      : { acquisition_budget, growth_stage, target_geography, target_specializations, acquisition_timeline }
+      ? { aum_cad: aum, client_count, years_in_business, product_mix: carrier_mix, specializations, exit_timeline }
+      : { acquisition_budget_cad: acquisition_budget, growth_stage, target_geography, target_specializations, acquisition_timeline }
 
   const { error: detailsError } = await supabase
     .from('agora_advisor_details')
-    .insert({ id: userId, ...details })
+    .insert({ profile_id: userId, ...details })
 
   if (detailsError) {
     await supabase.auth.admin.deleteUser(userId)
