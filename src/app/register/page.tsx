@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { SPECIALTIES, CARRIERS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
 
+export const dynamic = 'force-dynamic'
+
 const BRAND = {
   midnight: '#0D1B3E',
   navy: '#1A3266',
