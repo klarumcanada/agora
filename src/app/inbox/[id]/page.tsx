@@ -48,10 +48,9 @@ export default function AgoraThreadPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = typeof window === 'undefined'
+    ? (null as unknown as ReturnType<typeof createBrowserClient>)
+    : createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const [messages, setMessages] = useState<RawMessage[]>([])
   const [nameMap, setNameMap] = useState<Record<string, string>>({})

@@ -47,10 +47,9 @@ function initials(name: string) {
 
 export default function AgoraInboxPage() {
   const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = typeof window === 'undefined'
+    ? (null as unknown as ReturnType<typeof createBrowserClient>)
+    : createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const [threads, setThreads] = useState<Thread[]>([])
   const [userId, setUserId] = useState<string | null>(null)
