@@ -649,12 +649,20 @@ export default function RegisterPage() {
       if (acquisitionTimeline) fd.append('acquisition_timeline', acquisitionTimeline)
     }
 
-    const res = await fetch('/agora/api/register', { method: 'POST', body: fd })
-    const data = await res.json()
-    setSubmitting(false)
+    try {
+      const res = await fetch('/agora/api/register', { method: 'POST', body: fd })
+      const data = await res.json().catch(() => null)
 
-    if (!res.ok) { setError(data.error ?? 'Something went wrong. Please try again.'); return }
-    router.push('/register/success')
+      if (!res.ok) {
+        setError(data?.error ?? `Something went wrong (status ${res.status}). Please try again.`)
+        return
+      }
+      router.push('/register/success')
+    } catch {
+      setError('Could not reach the server. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
