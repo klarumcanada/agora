@@ -799,8 +799,8 @@ export default function RegisterPage() {
                     <div style={{ borderTop: '1px solid #F1F5F9' }}>
                       <RadioOption
                         name="valuation_method" value="manual"
-                        label="Enter my AUM manually"
-                        description="Provide your total assets under management as a single figure."
+                        label="Enter my book value manually"
+                        description="Provide your total book value as a single figure."
                         checked={valuationMethod === 'manual'}
                         onChange={() => { setValuationMethod('manual'); setValuationRange(null); setCalcError(null) }}
                       />
@@ -876,7 +876,7 @@ export default function RegisterPage() {
                         border: '1px solid #BFDBFE',
                       }}>
                         <div style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748B', fontFamily: 'var(--font-sans), DM Sans, sans-serif', marginBottom: '6px' }}>
-                          Estimated value
+                          Estimated book value
                         </div>
                         <div style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontSize: '24px', fontWeight: 600, color: BRAND.midnight, letterSpacing: '-0.01em' }}>
                           {fmtCurrency(valuationRange.low)} – {fmtCurrency(valuationRange.high)}
@@ -889,10 +889,10 @@ export default function RegisterPage() {
                   </>
                 )}
 
-                {/* Manual AUM */}
+                {/* Manual book value */}
                 {valuationMethod === 'manual' && (
                   <>
-                    <Field label="Estimated AUM (CAD)">
+                    <Field label="Book value (CAD)">
                       <TextInput value={aum} onChange={setAum} type="number" placeholder="e.g. 25000000" prefix="$" />
                     </Field>
 

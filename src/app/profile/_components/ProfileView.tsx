@@ -175,7 +175,7 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', fontWeight: 600, color: BRAND.warning, letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                  Estimated value range
+                  Estimated book value range
                 </span>
                 <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: 600, color: BRAND.midnight }}>
                   {formatMoney(valuation.low_value)} – {formatMoney(valuation.high_value)}

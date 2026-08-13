@@ -276,7 +276,7 @@ export default function AgoraProfileEditPage() {
 
             {role === 'seller' && (
               <>
-                <Field label="Book value (AUM)">
+                <Field label="Book value">
                   {currentValuation && (
                     <div style={{
                       marginBottom: '10px', padding: '10px 14px', borderRadius: '8px',
