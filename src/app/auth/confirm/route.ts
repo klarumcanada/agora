@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
-  const next = searchParams.get('next') ?? '/marketplace'
+  const next = searchParams.get('next') ?? '/agora/marketplace'
 
   if (token_hash && type) {
     const supabase = await createServerClient()
@@ -17,5 +17,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  redirect('/login?error=confirmation_failed')
+  redirect('/agora/login?error=confirmation_failed')
 }
