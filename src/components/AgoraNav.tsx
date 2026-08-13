@@ -4,12 +4,14 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { useEffect, useRef, useState } from 'react'
+import { BRAND } from '@/lib/brand'
 
 export default function AgoraNav() {
   const pathname = usePathname()
   const router = useRouter()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const settingsRef = useRef<HTMLDivElement>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const supabase = typeof window === 'undefined'
     ? (null as unknown as ReturnType<typeof createBrowserClient>)
@@ -25,6 +27,18 @@ export default function AgoraNav() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [settingsOpen])
 
+  useEffect(() => {
+    async function loadUnread() {
+      const res = await fetch('/agora/api/inbox', { cache: 'no-store' })
+      if (!res.ok) return
+      const data = await res.json()
+      if (Array.isArray(data)) setUnreadCount(data.filter((t: { is_unread: boolean }) => t.is_unread).length)
+    }
+    loadUnread()
+    window.addEventListener('focus', loadUnread)
+    return () => window.removeEventListener('focus', loadUnread)
+  }, [pathname])
+
   async function handleSignOut() {
     setSettingsOpen(false)
     await supabase.auth.signOut()
@@ -33,6 +47,7 @@ export default function AgoraNav() {
 
   const links = [
     { href: '/marketplace', label: 'Marketplace', active: pathname.startsWith('/agora/marketplace') },
+    { href: '/inbox',       label: 'Messages',    active: pathname.startsWith('/agora/inbox'), badge: unreadCount },
     { href: '/profile',     label: 'My Profile',  active: pathname.startsWith('/agora/profile') },
   ]
 
@@ -59,8 +74,18 @@ export default function AgoraNav() {
               key={link.href}
               href={link.href}
               className={`mga-nav-link${link.active ? ' active' : ''}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               {link.label}
+              {!!link.badge && (
+                <span style={{
+                  background: BRAND.meadow, color: BRAND.midnight,
+                  fontSize: '11px', fontWeight: 700, borderRadius: '100px',
+                  padding: '1px 6px', lineHeight: '1.4', fontFamily: 'DM Sans, sans-serif',
+                }}>
+                  {link.badge}
+                </span>
+              )}
             </Link>
           ))}
         </div>
