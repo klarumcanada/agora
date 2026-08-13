@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase'
 import { calculateValuation } from '@/lib/valuation'
+import ConfirmSignup from '@/app/emails/ConfirmSignup'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -51,21 +53,24 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
-  // 1. Create auth user
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  // 1. Create auth user and generate a confirmation link/token.
+  // admin.createUser never sends a confirmation email on its own — generateLink
+  // both creates the (unconfirmed) user and hands back a hashed_token we send
+  // ourselves via Resend below.
+  const { data: linkData, error: authError } = await supabase.auth.admin.generateLink({
+    type: 'signup',
     email,
     password,
-    email_confirm: false,
-    user_metadata: { name, account_type, role },
+    options: { data: { name, account_type, role } },
   })
 
-  if (authError || !authData.user) {
+  if (authError || !linkData.user) {
     const msg = authError?.message ?? 'Failed to create account.'
     const status = msg.toLowerCase().includes('already') ? 409 : 400
     return NextResponse.json({ error: msg }, { status })
   }
 
-  const userId = authData.user.id
+  const userId = linkData.user.id
 
   // 2. Upload avatar if provided
   let avatar_url: string | null = null
@@ -178,6 +183,23 @@ export async function POST(req: NextRequest) {
         high_value,
         source: 'self_reported',
       })
+    }
+  }
+
+  // 6. Send the confirmation email ourselves via Resend.
+  const hashedToken = linkData.properties?.hashed_token
+  if (hashedToken) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      const confirmUrl = `${process.env.NEXT_PUBLIC_APP_URL}/agora/auth/confirm?token_hash=${hashedToken}&type=signup`
+      await resend.emails.send({
+        from: 'Agora <notifications@klarum.ca>',
+        to: email,
+        subject: 'Confirm your email to finish setting up Agora',
+        react: ConfirmSignup({ name, confirmUrl }),
+      })
+    } catch (emailErr) {
+      console.error('Agora confirmation email send failed:', emailErr)
     }
   }
 
