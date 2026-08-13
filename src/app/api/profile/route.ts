@@ -26,44 +26,36 @@ const PROFILE_FIELDS = ['name', 'phone', 'city', 'province', 'bio', 'avatar_url'
 
 const DETAILS_FIELDS: Record<string, string[]> = {
   'seller:individual': [
-    'aum_cad', 'client_count', 'exit_timeline', 'products', 'carrier_affiliations',
+    'book_value', 'client_count', 'exit_timeline', 'products', 'carrier_affiliations',
     'sale_portion_type', 'sale_portion_percentage',
     'sale_portion_segment_type', 'sale_portion_segment_detail',
     'valuation_method',
   ],
   'seller:corporation': [
-    'aggregate_aum_cad', 'aggregate_client_count', 'exit_timeline', 'products', 'carrier_affiliations',
+    'book_value', 'client_count', 'exit_timeline', 'products', 'carrier_affiliations',
     'sale_portion_type', 'sale_portion_percentage',
     'sale_portion_segment_type', 'sale_portion_segment_detail',
     'entity_name',
   ],
   'buyer:individual': [
-    'acquisition_budget_cad', 'acquisition_timeline', 'target_geography',
-    'target_products', 'carrier_affiliations',
+    'acquisition_budget_cad', 'acquisition_timeline', 'target_provinces',
+    'products', 'carrier_affiliations',
   ],
   'buyer:corporation': [
-    'acquisition_budget_cad', 'acquisition_timeline', 'target_geography',
-    'target_products', 'carrier_affiliations',
-    'acquisition_target_count', 'target_size_range',
+    'acquisition_budget_cad', 'acquisition_timeline', 'target_provinces',
+    'products', 'carrier_affiliations',
     'entity_name',
   ],
 }
 
 function computeProfileComplete(
   role: string,
-  accountType: string,
   details: Record<string, unknown>
 ): boolean {
-  if (role === 'seller' && accountType === 'individual') {
-    return details.aum_cad != null && details.client_count != null && !!details.exit_timeline
+  if (role === 'seller') {
+    return details.book_value != null && details.client_count != null && !!details.exit_timeline
   }
-  if (role === 'seller' && accountType === 'corporation') {
-    return details.aggregate_aum_cad != null && details.aggregate_client_count != null
-  }
-  if (role === 'buyer' && accountType === 'individual') {
-    return details.acquisition_budget_cad != null && !!details.acquisition_timeline
-  }
-  return details.acquisition_target_count != null && !!details.target_size_range
+  return details.acquisition_budget_cad != null && !!details.acquisition_timeline
 }
 
 export async function GET() {
@@ -144,7 +136,7 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   const mergedDetails = { ...(currentDetails ?? {}), ...detailsUpdate } as Record<string, unknown>
-  const profile_complete = computeProfileComplete(role, account_type, mergedDetails)
+  const profile_complete = computeProfileComplete(role, mergedDetails)
 
   const [profileRes, detailsRes] = await Promise.all([
     admin

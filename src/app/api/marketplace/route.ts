@@ -90,8 +90,8 @@ export async function GET(request: NextRequest) {
     )
   }
   if (targetRole === 'seller') {
-    if (minBookValue) merged = merged.filter(p => (p.details.aum_cad ?? p.details.aggregate_aum_cad ?? 0) >= Number(minBookValue))
-    if (maxBookValue) merged = merged.filter(p => (p.details.aum_cad ?? p.details.aggregate_aum_cad ?? 0) <= Number(maxBookValue))
+    if (minBookValue) merged = merged.filter(p => (p.details.book_value ?? 0) >= Number(minBookValue))
+    if (maxBookValue) merged = merged.filter(p => (p.details.book_value ?? 0) <= Number(maxBookValue))
     if (timeline) merged = merged.filter(p => p.details.exit_timeline === timeline)
   } else {
     if (minBudget) merged = merged.filter(p => (p.details.acquisition_budget_cad ?? 0) >= Number(minBudget) * 1_000_000)

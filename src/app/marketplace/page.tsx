@@ -38,8 +38,7 @@ const BUDGET_RANGES = [
 ]
 
 type Details = {
-  aum_cad?: number | null
-  aggregate_aum_cad?: number | null
+  book_value?: number | null
   client_count?: number | null
   exit_timeline?: string | null
   sale_portion_type?: string | null
@@ -288,7 +287,7 @@ function Avatar({ name, url }: { name: string; url: string | null }) {
 
 function SellerCard({ profile }: { profile: AgoraProfile }) {
   const d = profile.details
-  const bookValue = d.aum_cad ?? d.aggregate_aum_cad ?? null
+  const bookValue = d.book_value ?? null
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
       <div style={{ borderLeft: `3px solid ${BRAND.meadowText}`, paddingLeft: '12px', marginBottom: '1rem' }}>

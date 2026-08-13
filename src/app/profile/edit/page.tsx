@@ -99,7 +99,7 @@ export default function AgoraProfileEditPage() {
       setCarriers(details.carrier_affiliations ?? [])
 
       if (profile.role === 'seller') {
-        const bv = details.aum_cad ?? details.aggregate_aum_cad
+        const bv = details.book_value
         setBookValue(bv != null ? String(bv) : '')
         setClientCount(details.client_count != null ? String(details.client_count) : '')
         setExitTimeline(details.exit_timeline ?? '')

@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
   const details =
     role === 'seller'
       ? {
-          aum_cad: aum ? Number(aum) : null,
+          book_value: aum ? Number(aum) : null,
           client_count: client_count ? Number(client_count) : null,
           years_in_business: years_in_business ? Number(years_in_business) : null,
           carrier_affiliations,
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
       : {
           acquisition_budget_cad: acquisition_budget ? Number(acquisition_budget) : null,
           growth_stage: growth_stage || null,
-          target_geography,
+          target_provinces: target_geography,
           target_products,
           acquisition_timeline: acquisition_timeline || null,
         }

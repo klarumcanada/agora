@@ -17,8 +17,7 @@ export type ProfileData = {
   details: {
     entity_name?: string | null
     years_in_business?: number | null
-    aum_cad?: number | null
-    aggregate_aum_cad?: number | null
+    book_value?: number | null
     client_count?: number | null
     exit_timeline?: string | null
     sale_portion_type?: string | null
@@ -77,7 +76,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: boolean }) {
   const { profile, details, valuation } = data
   const isSeller = profile.role === 'seller'
-  const bookValue = details.aum_cad ?? details.aggregate_aum_cad ?? null
+  const bookValue = details.book_value ?? null
 
   const location = [profile.city, profile.province].filter(Boolean).join(', ')
 
