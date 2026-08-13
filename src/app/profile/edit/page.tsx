@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
 import { BRAND } from '@/lib/brand'
+import { SALE_PORTION_SEGMENT_TYPES } from '@/lib/constants'
 
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT']
 
@@ -64,6 +65,10 @@ export default function AgoraProfileEditPage() {
   const [clientCount, setClientCount] = useState('')
   const [exitTimeline, setExitTimeline] = useState('')
   const [salePortionType, setSalePortionType] = useState<'full' | 'partial' | ''>('')
+  const [salePortionMethod, setSalePortionMethod] = useState<'percentage' | 'segment' | ''>('')
+  const [salePortionPercentage, setSalePortionPercentage] = useState('')
+  const [salePortionSegmentType, setSalePortionSegmentType] = useState('')
+  const [salePortionSegmentDetail, setSalePortionSegmentDetail] = useState('')
 
   const [acquisitionBudget, setAcquisitionBudget] = useState('')
   const [acquisitionTimeline, setAcquisitionTimeline] = useState('')
@@ -104,6 +109,14 @@ export default function AgoraProfileEditPage() {
         setClientCount(details.client_count != null ? String(details.client_count) : '')
         setExitTimeline(details.exit_timeline ?? '')
         setSalePortionType(details.sale_portion_type ?? '')
+        setSalePortionPercentage(details.sale_portion_percentage != null ? String(details.sale_portion_percentage) : '')
+        setSalePortionSegmentType(details.sale_portion_segment_type ?? '')
+        setSalePortionSegmentDetail(details.sale_portion_segment_detail ?? '')
+        setSalePortionMethod(
+          details.sale_portion_percentage != null ? 'percentage'
+          : details.sale_portion_segment_type ? 'segment'
+          : ''
+        )
       } else {
         setAcquisitionBudget(details.acquisition_budget_cad != null ? String(details.acquisition_budget_cad) : '')
         setAcquisitionTimeline(details.acquisition_timeline ?? '')
@@ -150,6 +163,19 @@ export default function AgoraProfileEditPage() {
       payload.client_count = clientCount ? Number(clientCount) : null
       payload.exit_timeline    = exitTimeline || null
       payload.sale_portion_type = salePortionType || null
+      if (salePortionType === 'partial' && salePortionMethod === 'percentage') {
+        payload.sale_portion_percentage = salePortionPercentage ? Number(salePortionPercentage) : null
+        payload.sale_portion_segment_type = null
+        payload.sale_portion_segment_detail = null
+      } else if (salePortionType === 'partial' && salePortionMethod === 'segment') {
+        payload.sale_portion_percentage = null
+        payload.sale_portion_segment_type = salePortionSegmentType || null
+        payload.sale_portion_segment_detail = salePortionSegmentDetail || null
+      } else {
+        payload.sale_portion_percentage = null
+        payload.sale_portion_segment_type = null
+        payload.sale_portion_segment_detail = null
+      }
     } else {
       payload.acquisition_budget_cad  = acquisitionBudget ? Number(acquisitionBudget) : null
       payload.acquisition_timeline    = acquisitionTimeline || null
@@ -315,6 +341,48 @@ export default function AgoraProfileEditPage() {
                     <ToggleChip label="Partial sale" active={salePortionType === 'partial'} onClick={() => setSalePortionType(salePortionType === 'partial' ? '' : 'partial')} />
                   </div>
                 </Field>
+
+                {salePortionType === 'partial' && (
+                  <Field label="How would you like to describe the portion?">
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      <ToggleChip label="By percentage" active={salePortionMethod === 'percentage'} onClick={() => setSalePortionMethod('percentage')} />
+                      <ToggleChip label="By specific segment" active={salePortionMethod === 'segment'} onClick={() => setSalePortionMethod('segment')} />
+                    </div>
+
+                    {salePortionMethod === 'percentage' && (
+                      <div style={{ position: 'relative', maxWidth: '160px' }}>
+                        <input
+                          type="number" min="1" max="99"
+                          value={salePortionPercentage}
+                          onChange={e => setSalePortionPercentage(e.target.value)}
+                          placeholder="e.g. 50"
+                          style={{ ...inputStyle, paddingRight: '28px' }}
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }}>%</span>
+                      </div>
+                    )}
+
+                    {salePortionMethod === 'segment' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <select value={salePortionSegmentType} onChange={e => setSalePortionSegmentType(e.target.value)} style={selectStyle}>
+                          <option value="">Select segment type</option>
+                          {SALE_PORTION_SEGMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                        <input
+                          value={salePortionSegmentDetail}
+                          onChange={e => setSalePortionSegmentDetail(e.target.value)}
+                          placeholder={
+                            salePortionSegmentType === 'Product line' ? 'e.g. Group benefits and disability'
+                            : salePortionSegmentType === 'Geography' ? 'e.g. Ontario clients only'
+                            : salePortionSegmentType === 'Client type' ? 'e.g. Clients under $500K AUM'
+                            : 'Describe the segment you’re selling'
+                          }
+                          style={inputStyle}
+                        />
+                      </div>
+                    )}
+                  </Field>
+                )}
               </>
             )}
 

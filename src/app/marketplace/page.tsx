@@ -42,6 +42,9 @@ type Details = {
   client_count?: number | null
   exit_timeline?: string | null
   sale_portion_type?: string | null
+  sale_portion_percentage?: number | null
+  sale_portion_segment_type?: string | null
+  sale_portion_segment_detail?: string | null
   acquisition_budget_cad?: number | null
   acquisition_timeline?: string | null
   target_provinces?: string[] | null
@@ -66,6 +69,17 @@ function formatMoney(value: number) {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
   return `$${value.toLocaleString()}`
+}
+
+function portionLabel(d: Details) {
+  if (d.sale_portion_type !== 'partial') return null
+  if (d.sale_portion_percentage != null) return `${d.sale_portion_percentage}% of book`
+  if (d.sale_portion_segment_type) {
+    return d.sale_portion_segment_detail
+      ? `${d.sale_portion_segment_type}: ${d.sale_portion_segment_detail}`
+      : d.sale_portion_segment_type
+  }
+  return 'Partial sale'
 }
 
 function getInitials(name: string) {
@@ -320,7 +334,7 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
         {bookValue !== null && <StatPill label="Book value" value={formatMoney(bookValue)} highlight />}
         {d.client_count != null && <StatPill label="Clients" value={d.client_count.toLocaleString()} />}
         {d.exit_timeline && <StatPill label="Timeline" value={d.exit_timeline} />}
-        {d.sale_portion_type === 'partial' && <StatPill label="" value="Partial sale" />}
+        {portionLabel(d) && <StatPill label="Portion" value={portionLabel(d)!} />}
       </div>
 
       {(d.products?.length ?? 0) > 0 && (

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { PRODUCTS, CARRIER_AFFILIATIONS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
+import { PRODUCTS, CARRIER_AFFILIATIONS, PROVINCES, PROVINCE_LABELS, TIMELINES, SALE_PORTION_SEGMENT_TYPES } from '@/lib/constants'
 import { BRAND } from '@/lib/brand'
 import AgoraWordmark from '@/components/AgoraWordmark'
 
@@ -55,13 +55,14 @@ function Field({ label, hint, required, children }: {
   )
 }
 
-function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, prefix }: {
+function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, prefix, suffix }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
   autoComplete?: string
   prefix?: string
+  suffix?: string
 }) {
   const [focused, setFocused] = useState(false)
   return (
@@ -85,7 +86,7 @@ function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, 
         autoComplete={autoComplete}
         style={{
           width: '100%',
-          padding: prefix ? '11px 12px 11px 26px' : '11px 12px',
+          padding: `11px ${suffix ? '26px' : '12px'} 11px ${prefix ? '26px' : '12px'}`,
           fontSize: '14px',
           fontFamily: 'var(--font-sans), DM Sans, sans-serif',
           borderRadius: '8px',
@@ -97,6 +98,15 @@ function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, 
           transition: 'border-color .15s',
         }}
       />
+      {suffix && (
+        <span style={{
+          position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+          fontSize: '14px', color: '#94A3B8',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif', pointerEvents: 'none',
+        }}>
+          {suffix}
+        </span>
+      )}
     </div>
   )
 }
@@ -266,6 +276,25 @@ function TimelineChips({ selected, onSelect }: {
         )
       })}
     </div>
+  )
+}
+
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button" onClick={onClick}
+      style={{
+        padding: '8px 14px', fontSize: '13px',
+        fontFamily: 'var(--font-sans), DM Sans, sans-serif',
+        borderRadius: '8px',
+        border: active ? `2px solid ${BRAND.meadowText}` : '1px solid #E2E6F0',
+        background: active ? BRAND.ice : 'white',
+        color: active ? BRAND.midnight : '#64748B',
+        cursor: 'pointer', fontWeight: active ? 500 : 400, transition: 'all .15s',
+      }}
+    >
+      {label}
+    </button>
   )
 }
 
@@ -516,6 +545,11 @@ export default function RegisterPage() {
   const [carrierAffiliations, setCarrierAffiliations] = useState<string[]>([])
   const [products, setProducts] = useState<string[]>([])
   const [exitTimeline, setExitTimeline] = useState('')
+  const [salePortionType, setSalePortionType] = useState<'full' | 'partial' | ''>('')
+  const [salePortionMethod, setSalePortionMethod] = useState<'percentage' | 'segment' | ''>('')
+  const [salePortionPercentage, setSalePortionPercentage] = useState('')
+  const [salePortionSegmentType, setSalePortionSegmentType] = useState('')
+  const [salePortionSegmentDetail, setSalePortionSegmentDetail] = useState('')
 
   // Step 3 — buyer
   const [acquisitionBudget, setAcquisitionBudget] = useState('')
@@ -618,6 +652,14 @@ export default function RegisterPage() {
       if (carrierAffiliations.length) fd.append('carrier_affiliations', JSON.stringify(carrierAffiliations))
       if (products.length) fd.append('products', JSON.stringify(products))
       if (exitTimeline) fd.append('exit_timeline', exitTimeline)
+      if (salePortionType) fd.append('sale_portion_type', salePortionType)
+      if (salePortionType === 'partial' && salePortionMethod === 'percentage' && salePortionPercentage) {
+        fd.append('sale_portion_percentage', salePortionPercentage)
+      }
+      if (salePortionType === 'partial' && salePortionMethod === 'segment') {
+        if (salePortionSegmentType) fd.append('sale_portion_segment_type', salePortionSegmentType)
+        if (salePortionSegmentDetail) fd.append('sale_portion_segment_detail', salePortionSegmentDetail)
+      }
     } else {
       if (acquisitionBudget) fd.append('acquisition_budget', acquisitionBudget)
       if (growthStage) fd.append('growth_stage', growthStage)
@@ -936,6 +978,47 @@ export default function RegisterPage() {
                     <Field label="Exit timeline">
                       <TimelineChips selected={exitTimeline} onSelect={setExitTimeline} />
                     </Field>
+
+                    <Field label="Portion of book">
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <Chip label="Full book" active={salePortionType === 'full'} onClick={() => setSalePortionType(salePortionType === 'full' ? '' : 'full')} />
+                        <Chip label="Partial sale" active={salePortionType === 'partial'} onClick={() => setSalePortionType(salePortionType === 'partial' ? '' : 'partial')} />
+                      </div>
+                    </Field>
+
+                    {salePortionType === 'partial' && (
+                      <Field label="How would you like to describe the portion?">
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                          <Chip label="By percentage" active={salePortionMethod === 'percentage'} onClick={() => setSalePortionMethod('percentage')} />
+                          <Chip label="By specific segment" active={salePortionMethod === 'segment'} onClick={() => setSalePortionMethod('segment')} />
+                        </div>
+
+                        {salePortionMethod === 'percentage' && (
+                          <div style={{ maxWidth: '160px' }}>
+                            <TextInput value={salePortionPercentage} onChange={setSalePortionPercentage} type="number" placeholder="e.g. 50" suffix="%" />
+                          </div>
+                        )}
+
+                        {salePortionMethod === 'segment' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <SelectInput value={salePortionSegmentType} onChange={setSalePortionSegmentType}>
+                              <option value="">Select segment type</option>
+                              {SALE_PORTION_SEGMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </SelectInput>
+                            <TextInput
+                              value={salePortionSegmentDetail}
+                              onChange={setSalePortionSegmentDetail}
+                              placeholder={
+                                salePortionSegmentType === 'Product line' ? 'e.g. Group benefits and disability'
+                                : salePortionSegmentType === 'Geography' ? 'e.g. Ontario clients only'
+                                : salePortionSegmentType === 'Client type' ? 'e.g. Clients under $500K AUM'
+                                : 'Describe the segment you’re selling'
+                              }
+                            />
+                          </div>
+                        )}
+                      </Field>
+                    )}
                   </>
                 )}
               </>

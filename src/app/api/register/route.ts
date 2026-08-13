@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
   const carrier_affiliations = formData.get('carrier_affiliations') ? JSON.parse(formData.get('carrier_affiliations') as string) : null
   const products = formData.get('products') ? JSON.parse(formData.get('products') as string) : null
   const exit_timeline = formData.get('exit_timeline') as string | null
+  const sale_portion_type = formData.get('sale_portion_type') as string | null
+  const sale_portion_percentage = formData.get('sale_portion_percentage') as string | null
+  const sale_portion_segment_type = formData.get('sale_portion_segment_type') as string | null
+  const sale_portion_segment_detail = formData.get('sale_portion_segment_detail') as string | null
 
   // buyer
   const acquisition_budget = formData.get('acquisition_budget') as string | null
@@ -125,6 +129,10 @@ export async function POST(req: NextRequest) {
           products,
           exit_timeline: exit_timeline || null,
           willing_to_stay,
+          sale_portion_type: sale_portion_type || null,
+          sale_portion_percentage: sale_portion_percentage ? Number(sale_portion_percentage) : null,
+          sale_portion_segment_type: sale_portion_segment_type || null,
+          sale_portion_segment_detail: sale_portion_segment_detail || null,
         }
       : {
           acquisition_budget_cad: acquisition_budget ? Number(acquisition_budget) : null,

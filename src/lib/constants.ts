@@ -36,3 +36,10 @@ export const TIMELINES = [
   '1–2 years',
   'Flexible',
 ] as const
+
+export const SALE_PORTION_SEGMENT_TYPES = [
+  'Product line',
+  'Geography',
+  'Client type',
+  'Other',
+] as const
