@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
   let profileQuery = admin
     .from('agora_profiles')
-    .select('id, account_type, role, name, city, province, avatar_url, bio')
+    .select('id, account_type, role, name, entity_name, city, province, avatar_url, bio')
     .eq('role', targetRole)
 
   if (province) profileQuery = profileQuery.eq('province', province)

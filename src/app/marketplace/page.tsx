@@ -58,6 +58,7 @@ type AgoraProfile = {
   account_type: 'individual' | 'corporation'
   role: 'buyer' | 'seller'
   name: string
+  entity_name: string | null
   city: string | null
   province: string
   avatar_url: string | null
@@ -80,6 +81,10 @@ function portionLabel(d: Details) {
       : d.sale_portion_segment_type
   }
   return 'Partial sale'
+}
+
+function displayName(profile: AgoraProfile) {
+  return profile.account_type === 'corporation' && profile.entity_name ? profile.entity_name : profile.name
 }
 
 function getInitials(name: string) {
@@ -307,9 +312,14 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
       <div style={{ borderLeft: `3px solid ${BRAND.meadowText}`, paddingLeft: '12px', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <Avatar name={profile.name} url={profile.avatar_url} />
+            <Avatar name={displayName(profile)} url={profile.avatar_url} />
             <div>
-              <div style={cardNameStyle}>{profile.name}</div>
+              <div style={cardNameStyle}>{displayName(profile)}</div>
+              {profile.account_type === 'corporation' && profile.entity_name && (
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#9CA3AF', marginTop: '1px' }}>
+                  {profile.name}
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', flexWrap: 'wrap' }}>
                 <span style={cardSubStyle}>
                   {profile.province}{d.years_in_business ? ` · ${d.years_in_business} yrs` : ''}
@@ -360,9 +370,14 @@ function BuyerCard({ profile }: { profile: AgoraProfile }) {
       <div style={{ borderLeft: '3px solid #CBD5E1', paddingLeft: '12px', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <Avatar name={profile.name} url={profile.avatar_url} />
+            <Avatar name={displayName(profile)} url={profile.avatar_url} />
             <div>
-              <div style={cardNameStyle}>{profile.name}</div>
+              <div style={cardNameStyle}>{displayName(profile)}</div>
+              {profile.account_type === 'corporation' && profile.entity_name && (
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#9CA3AF', marginTop: '1px' }}>
+                  {profile.name}
+                </div>
+              )}
               <span style={cardSubStyle}>{profile.province}</span>
             </div>
           </div>

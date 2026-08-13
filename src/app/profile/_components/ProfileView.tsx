@@ -130,18 +130,18 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
               }}>
                 {profile.avatar_url
                   ? <img src={profile.avatar_url} alt={profile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : getInitials(profile.name)
+                  : getInitials(profile.account_type === 'corporation' && details.entity_name ? details.entity_name : profile.name)
                 }
               </div>
 
               {/* Name + meta */}
               <div>
                 <div style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '22px', color: BRAND.midnight, lineHeight: 1.2 }}>
-                  {profile.name}
+                  {profile.account_type === 'corporation' && details.entity_name ? details.entity_name : profile.name}
                 </div>
                 {profile.account_type === 'corporation' && details.entity_name && (
                   <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.navy, marginTop: '2px' }}>
-                    {details.entity_name}
+                    {profile.name}
                   </div>
                 )}
                 <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: '#9CA3AF', marginTop: '3px' }}>
