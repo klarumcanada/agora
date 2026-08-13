@@ -141,6 +141,26 @@ export default function AgoraMarketplacePage() {
 
   useEffect(() => { fetchProfiles() }, [fetchProfiles])
 
+  async function toggleSave(id: string, e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const isSaved = savedIds.includes(id)
+    setSavedIds(prev => isSaved ? prev.filter(x => x !== id) : [...prev, id])
+    try {
+      if (isSaved) {
+        await fetch(`/agora/api/saves?saved_profile_id=${id}`, { method: 'DELETE' })
+      } else {
+        await fetch('/agora/api/saves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ saved_profile_id: id }),
+        })
+      }
+    } catch {
+      setSavedIds(prev => isSaved ? [...prev, id] : prev.filter(x => x !== id))
+    }
+  }
+
   function toggleItem(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter(v => v !== value) : [...list, value])
   }
@@ -282,8 +302,8 @@ export default function AgoraMarketplacePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {displayedProfiles.map(p =>
                 p.role === 'seller'
-                  ? <SellerCard key={p.id} profile={p} />
-                  : <BuyerCard key={p.id} profile={p} />
+                  ? <SellerCard key={p.id} profile={p} isSaved={savedIds.includes(p.id)} onToggleSave={toggleSave} />
+                  : <BuyerCard key={p.id} profile={p} isSaved={savedIds.includes(p.id)} onToggleSave={toggleSave} />
               )}
             </div>
           )}
@@ -304,7 +324,24 @@ function Avatar({ name, url }: { name: string; url: string | null }) {
   )
 }
 
-function SellerCard({ profile }: { profile: AgoraProfile }) {
+function SaveHeart({ saved, onClick }: { saved: boolean; onClick: (e: React.MouseEvent) => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={saved ? 'Remove from saved' : 'Save profile'}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill={saved ? BRAND.danger : 'none'} stroke={saved ? BRAND.danger : '#C4C9D4'} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    </button>
+  )
+}
+
+function SellerCard({ profile, isSaved, onToggleSave }: { profile: AgoraProfile; isSaved: boolean; onToggleSave: (id: string, e: React.MouseEvent) => void }) {
   const d = profile.details
   const bookValue = d.book_value ?? null
   return (
@@ -336,7 +373,10 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
               </div>
             </div>
           </div>
-          <span style={sellerBadge}>Seller</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <SaveHeart saved={isSaved} onClick={e => onToggleSave(profile.id, e)} />
+            <span style={sellerBadge}>Seller</span>
+          </div>
         </div>
       </div>
 
@@ -363,7 +403,7 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
   )
 }
 
-function BuyerCard({ profile }: { profile: AgoraProfile }) {
+function BuyerCard({ profile, isSaved, onToggleSave }: { profile: AgoraProfile; isSaved: boolean; onToggleSave: (id: string, e: React.MouseEvent) => void }) {
   const d = profile.details
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
@@ -381,7 +421,10 @@ function BuyerCard({ profile }: { profile: AgoraProfile }) {
               <span style={cardSubStyle}>{profile.province}</span>
             </div>
           </div>
-          <span style={buyerBadge}>Buyer</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <SaveHeart saved={isSaved} onClick={e => onToggleSave(profile.id, e)} />
+            <span style={buyerBadge}>Buyer</span>
+          </div>
         </div>
       </div>
 
