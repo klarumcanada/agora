@@ -11,23 +11,21 @@ export default function RegisterSuccessPage() {
       justifyContent: 'center',
       padding: '24px',
     }}>
-      <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
-        <svg width="38" height="26" viewBox="0 0 44 30" fill="none">
-          <rect x="1" y="1" width="3.5" height="28" fill="white" />
-          <path d="M4.5 15 L18 1" stroke="white" strokeWidth="3" strokeLinecap="square" />
-          <path d="M4.5 15 L18 29" stroke="white" strokeWidth="3" strokeLinecap="square" />
-          <line x1="18" y1="4" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-          <line x1="18" y1="26" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-          <circle cx="34" cy="15" r="7" fill="#3B82F6" />
+      <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
+        <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M33 44 C33 20 67 20 67 44" fill="none" stroke="#F8F7F4" strokeWidth="7" />
+          <path d="M20 44 H80 L70 84 H30 Z" fill="none" stroke="#F8F7F4" strokeWidth="7" strokeLinejoin="round" />
+          <circle cx="70" cy="74" r="19" fill="oklch(80% 0.28 145)" />
+          <text x="70" y="82" fontFamily="'DM Sans', sans-serif" fontWeight="700" fontSize="24" fill="#0D1B3E" textAnchor="middle">A</text>
         </svg>
         <span style={{
-          fontFamily: 'var(--font-serif), Georgia, serif',
+          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
           fontSize: '22px',
-          fontWeight: 600,
+          fontWeight: 700,
           color: 'white',
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.01em',
         }}>
-          klarum
+          agora
         </span>
       </Link>
 
@@ -43,23 +41,24 @@ export default function RegisterSuccessPage() {
           width: '48px',
           height: '48px',
           borderRadius: '50%',
-          background: '#DBEAFE',
+          background: 'oklch(80% 0.28 145)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 24px',
         }}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M4 11l4.5 4.5 9-9" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 11l4.5 4.5 9-9" stroke="#0D1B3E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
 
         <h1 style={{
           fontFamily: 'var(--font-serif), Georgia, serif',
-          fontSize: '24px',
-          fontWeight: 600,
+          fontStyle: 'italic',
+          fontSize: '26px',
+          fontWeight: 400,
           color: '#0D1B3E',
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.01em',
           lineHeight: 1.2,
           marginBottom: '12px',
         }}>
@@ -84,11 +83,11 @@ export default function RegisterSuccessPage() {
             width: '100%',
             padding: '13px',
             fontSize: '15px',
-            fontWeight: 500,
+            fontWeight: 700,
             fontFamily: 'var(--font-sans), DM Sans, sans-serif',
             borderRadius: '8px',
-            background: '#3B82F6',
-            color: '#fff',
+            background: 'oklch(80% 0.28 145)',
+            color: '#0D1B3E',
             textDecoration: 'none',
             textAlign: 'center',
             boxSizing: 'border-box',

@@ -4,15 +4,9 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PRODUCTS, CARRIER_AFFILIATIONS, PROVINCES, PROVINCE_LABELS, TIMELINES } from '@/lib/constants'
+import { BRAND } from '@/lib/brand'
 
 export const dynamic = 'force-dynamic'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-}
 
 type AccountType = 'individual' | 'corporation'
 type Role = 'seller' | 'buyer'
@@ -47,7 +41,7 @@ function Field({ label, hint, required, children }: {
           letterSpacing: '0.01em',
         }}>
           {label}
-          {required && <span style={{ color: '#DC2626', marginLeft: '3px' }}>*</span>}
+          {required && <span style={{ color: BRAND.danger, marginLeft: '3px' }}>*</span>}
         </label>
       )}
       {hint && (
@@ -94,7 +88,7 @@ function TextInput({ value, onChange, placeholder, type = 'text', autoComplete, 
           fontSize: '14px',
           fontFamily: 'var(--font-sans), DM Sans, sans-serif',
           borderRadius: '8px',
-          border: focused ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+          border: focused ? `1.5px solid ${BRAND.meadowText}` : '1px solid #E2E6F0',
           background: 'white',
           color: BRAND.midnight,
           outline: 'none',
@@ -124,7 +118,7 @@ function SelectInput({ value, onChange, children }: {
         fontSize: '14px',
         fontFamily: 'var(--font-sans), DM Sans, sans-serif',
         borderRadius: '8px',
-        border: focused ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+        border: focused ? `1.5px solid ${BRAND.meadowText}` : '1px solid #E2E6F0',
         background: 'white',
         color: BRAND.midnight,
         outline: 'none',
@@ -170,7 +164,7 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
           width: '100%', padding: '11px 14px', fontSize: '14px',
           fontFamily: 'var(--font-sans), DM Sans, sans-serif',
           borderRadius: open ? '8px 8px 0 0' : '8px',
-          border: open ? `1.5px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+          border: open ? `1.5px solid ${BRAND.meadowText}` : '1px solid #E2E6F0',
           background: 'white', cursor: 'pointer',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           transition: 'border-color .15s', boxSizing: 'border-box',
@@ -183,7 +177,7 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
       {open && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0,
-          background: 'white', border: `1.5px solid ${BRAND.electric}`,
+          background: 'white', border: `1.5px solid ${BRAND.meadowText}`,
           borderTop: 'none', borderRadius: '0 0 8px 8px',
           zIndex: 50, maxHeight: '220px', overflowY: 'auto',
         }}>
@@ -202,14 +196,14 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
               >
                 <span style={{
                   width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-                  border: active ? `2px solid ${BRAND.electric}` : '1.5px solid #CBD5E1',
-                  background: active ? BRAND.electric : 'white',
+                  border: active ? `2px solid ${BRAND.meadowText}` : '1.5px solid #CBD5E1',
+                  background: active ? BRAND.meadow : 'white',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all .1s',
                 }}>
                   {active && (
                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M1 4l3 3 5-6" stroke={BRAND.midnight} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                 </span>
@@ -229,13 +223,13 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
               display: 'inline-flex', alignItems: 'center',
               padding: '4px 10px', fontSize: '12px',
               fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-              borderRadius: '20px', background: BRAND.ice, color: BRAND.navy,
-              border: `1px solid ${BRAND.electric}`, fontWeight: 500,
+              borderRadius: '20px', background: BRAND.ice, color: BRAND.midnight,
+              fontWeight: 500,
             }}>
               {s}
               <button
                 type="button" onClick={() => onToggle(s)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 5px', color: BRAND.electric, fontSize: '14px', lineHeight: 1 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 5px', color: BRAND.meadowText, fontSize: '14px', lineHeight: 1 }}
               >×</button>
             </span>
           ))}
@@ -260,9 +254,9 @@ function TimelineChips({ selected, onSelect }: {
               padding: '8px 14px', fontSize: '13px',
               fontFamily: 'var(--font-sans), DM Sans, sans-serif',
               borderRadius: '8px',
-              border: active ? `2px solid ${BRAND.electric}` : '1px solid #E2E6F0',
+              border: active ? `2px solid ${BRAND.meadowText}` : '1px solid #E2E6F0',
               background: active ? BRAND.ice : 'white',
-              color: active ? BRAND.navy : '#64748B',
+              color: active ? BRAND.midnight : '#64748B',
               cursor: 'pointer', fontWeight: active ? 500 : 400, transition: 'all .15s',
             }}
           >
@@ -301,11 +295,11 @@ function RadioOption({ name, value, label, description, checked, onChange }: {
       <input type="radio" name={name} value={value} checked={checked} onChange={onChange} style={{ display: 'none' }} />
       <div style={{
         marginTop: '2px', flexShrink: 0, width: '18px', height: '18px', borderRadius: '50%',
-        border: checked ? `2px solid ${BRAND.electric}` : '1.5px solid #CBD5E1',
+        border: checked ? `2px solid ${BRAND.meadowText}` : '1.5px solid #CBD5E1',
         background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'border-color .15s',
       }}>
-        {checked && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND.electric }} />}
+        {checked && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND.meadow }} />}
       </div>
       <div>
         <div style={{ fontSize: '14px', fontWeight: checked ? 500 : 400, fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: BRAND.midnight, marginBottom: '3px' }}>
@@ -347,14 +341,14 @@ function Checkbox({ checked, onChange, label }: {
       <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ display: 'none' }} />
       <div style={{
         flexShrink: 0, marginTop: '2px', width: '18px', height: '18px', borderRadius: '4px',
-        border: checked ? `2px solid ${BRAND.electric}` : '1.5px solid #CBD5E1',
-        background: checked ? BRAND.electric : 'white',
+        border: checked ? `2px solid ${BRAND.meadowText}` : '1.5px solid #CBD5E1',
+        background: checked ? BRAND.meadow : 'white',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all .15s',
       }}>
         {checked && (
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1 4l3 3 5-6" stroke={BRAND.midnight} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </div>
@@ -392,7 +386,7 @@ function AvatarUpload({ preview, onChange, isCorporation }: {
         onMouseLeave={() => setHovering(false)}
         style={{
           flexShrink: 0, width: '72px', height: '72px', borderRadius: '50%',
-          border: preview ? 'none' : `2px dashed ${hovering ? BRAND.electric : '#CBD5E1'}`,
+          border: preview ? 'none' : `2px dashed ${hovering ? BRAND.meadowText : '#CBD5E1'}`,
           background: preview ? 'transparent' : (hovering ? BRAND.ice : '#F8FAFC'),
           cursor: 'pointer', padding: 0, overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -412,14 +406,14 @@ function AvatarUpload({ preview, onChange, isCorporation }: {
           </>
         ) : (
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 5v12M5 11h12" stroke={hovering ? BRAND.electric : '#94A3B8'} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M11 5v12M5 11h12" stroke={hovering ? BRAND.meadowText : '#94A3B8'} strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         )}
       </button>
       <div>
         <button
           type="button" onClick={() => inputRef.current?.click()}
-          style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: BRAND.electric, cursor: 'pointer', display: 'block', marginBottom: '4px' }}
+          style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: BRAND.meadowText, cursor: 'pointer', display: 'block', marginBottom: '4px' }}
         >
           {preview
             ? (isCorporation ? 'Change logo' : 'Change photo')
@@ -438,17 +432,15 @@ function AvatarUpload({ preview, onChange, isCorporation }: {
 
 function Logo() {
   return (
-    <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
-      <svg width="38" height="26" viewBox="0 0 44 30" fill="none">
-        <rect x="1" y="1" width="3.5" height="28" fill="white" />
-        <path d="M4.5 15 L18 1" stroke="white" strokeWidth="3" strokeLinecap="square" />
-        <path d="M4.5 15 L18 29" stroke="white" strokeWidth="3" strokeLinecap="square" />
-        <line x1="18" y1="4" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-        <line x1="18" y1="26" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.4" />
-        <circle cx="34" cy="15" r="7" fill={BRAND.electric} />
+    <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
+      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M33 44 C33 20 67 20 67 44" fill="none" stroke="#F8F7F4" strokeWidth="7" />
+        <path d="M20 44 H80 L70 84 H30 Z" fill="none" stroke="#F8F7F4" strokeWidth="7" strokeLinejoin="round" />
+        <circle cx="70" cy="74" r="19" fill={BRAND.meadow} />
+        <text x="70" y="82" fontFamily="'DM Sans', sans-serif" fontWeight="700" fontSize="24" fill={BRAND.midnight} textAnchor="middle">A</text>
       </svg>
-      <span style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontSize: '22px', fontWeight: 600, color: 'white', letterSpacing: '-0.02em' }}>
-        klarum
+      <span style={{ fontFamily: 'var(--font-sans), DM Sans, sans-serif', fontSize: '22px', fontWeight: 700, color: 'white', letterSpacing: '-0.01em' }}>
+        agora
       </span>
     </Link>
   )
@@ -468,7 +460,7 @@ function StepIndicator({ step, role }: { step: 1 | 2 | 3; role?: Role | null }) 
       <div style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94A3B8', fontFamily: 'var(--font-sans), DM Sans, sans-serif', marginBottom: '10px' }}>
         Step {step} of 3
       </div>
-      <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontSize: '26px', fontWeight: 600, color: BRAND.midnight, letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
+      <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontSize: '28px', fontWeight: 400, color: BRAND.midnight, letterSpacing: '-0.01em', lineHeight: 1.2, margin: 0 }}>
         {heading}
       </h1>
     </div>
@@ -715,10 +707,10 @@ export default function RegisterPage() {
             <button
               type="button" disabled={!canContinueStep1} onClick={() => setStep(2)}
               style={{
-                marginTop: '28px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 500,
+                marginTop: '28px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 700,
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif', borderRadius: '8px', border: 'none',
-                background: canContinueStep1 ? BRAND.electric : '#E5E7EB',
-                color: canContinueStep1 ? '#fff' : '#9CA3AF',
+                background: canContinueStep1 ? BRAND.meadow : '#E5E7EB',
+                color: canContinueStep1 ? BRAND.midnight : '#9CA3AF',
                 cursor: canContinueStep1 ? 'pointer' : 'not-allowed', transition: 'background .15s',
               }}
             >
@@ -727,7 +719,7 @@ export default function RegisterPage() {
 
             <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: '#94A3B8' }}>
               Already have an account?{' '}
-              <Link href="/login" style={{ color: BRAND.electric, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
+              <Link href="/login" style={{ color: BRAND.meadowText, textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
             </p>
           </>
         )}
@@ -785,10 +777,10 @@ export default function RegisterPage() {
             <button
               type="button" disabled={!step2Valid} onClick={() => setStep(3)}
               style={{
-                marginTop: '8px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 500,
+                marginTop: '8px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 700,
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif', borderRadius: '8px', border: 'none',
-                background: step2Valid ? BRAND.electric : '#E5E7EB',
-                color: step2Valid ? '#fff' : '#9CA3AF',
+                background: step2Valid ? BRAND.meadow : '#E5E7EB',
+                color: step2Valid ? BRAND.midnight : '#9CA3AF',
                 cursor: step2Valid ? 'pointer' : 'not-allowed', transition: 'background .15s',
               }}
             >
@@ -868,7 +860,7 @@ export default function RegisterPage() {
                     </div>
 
                     {calcError && (
-                      <p style={{ fontSize: '13px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: '#EF4444', marginBottom: '12px' }}>
+                      <p style={{ fontSize: '13px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: BRAND.danger, marginBottom: '12px' }}>
                         {calcError}
                       </p>
                     )}
@@ -880,8 +872,8 @@ export default function RegisterPage() {
                       style={{
                         width: '100%', padding: '12px', fontSize: '14px', fontWeight: 500,
                         fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-                        borderRadius: '8px', border: `1.5px solid ${BRAND.electric}`,
-                        background: 'white', color: BRAND.electric,
+                        borderRadius: '8px', border: `1.5px solid ${BRAND.meadowText}`,
+                        background: 'white', color: BRAND.meadowText,
                         cursor: calculating ? 'not-allowed' : 'pointer',
                         transition: 'background .15s, color .15s',
                         marginBottom: valuationRange ? '0' : '24px',
@@ -994,7 +986,7 @@ export default function RegisterPage() {
             )}
 
             {error && (
-              <p style={{ fontSize: '13px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: '#EF4444', marginBottom: '16px' }}>
+              <p style={{ fontSize: '13px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: BRAND.danger, marginBottom: '16px' }}>
                 {error}
               </p>
             )}
@@ -1002,10 +994,10 @@ export default function RegisterPage() {
             <button
               type="submit" disabled={submitting}
               style={{
-                marginTop: '8px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 500,
+                marginTop: '8px', width: '100%', padding: '13px', fontSize: '15px', fontWeight: 700,
                 fontFamily: 'var(--font-sans), DM Sans, sans-serif', borderRadius: '8px', border: 'none',
-                background: submitting ? '#E5E7EB' : BRAND.electric,
-                color: submitting ? '#9CA3AF' : '#fff',
+                background: submitting ? '#E5E7EB' : BRAND.meadow,
+                color: submitting ? '#9CA3AF' : BRAND.midnight,
                 cursor: submitting ? 'not-allowed' : 'pointer', transition: 'background .15s',
               }}
             >
@@ -1014,9 +1006,9 @@ export default function RegisterPage() {
 
             <p style={{ marginTop: '16px', fontSize: '12px', fontFamily: 'var(--font-sans), DM Sans, sans-serif', color: '#94A3B8', lineHeight: 1.6, textAlign: 'center' }}>
               By creating an account you agree to our{' '}
-              <Link href="/terms" style={{ color: BRAND.electric, textDecoration: 'none' }}>terms of service</Link>
+              <Link href="/terms" style={{ color: BRAND.meadowText, textDecoration: 'none' }}>terms of service</Link>
               {' '}and{' '}
-              <Link href="/privacy" style={{ color: BRAND.electric, textDecoration: 'none' }}>privacy policy</Link>.
+              <Link href="/privacy" style={{ color: BRAND.meadowText, textDecoration: 'none' }}>privacy policy</Link>.
             </p>
           </form>
         )}

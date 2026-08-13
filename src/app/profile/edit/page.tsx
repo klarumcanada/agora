@@ -5,15 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-  voltage: '#E8C547',
-}
+import { BRAND } from '@/lib/brand'
 
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT']
 
@@ -199,10 +191,10 @@ export default function AgoraProfileEditPage() {
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '26px', fontWeight: 600, color: BRAND.midnight, marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '28px', color: BRAND.midnight, marginBottom: '4px' }}>
             Edit profile
           </h1>
-          <Link href="/profile" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.electric, textDecoration: 'none' }}>
+          <Link href="/profile" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.meadowText, textDecoration: 'none' }}>
             ← Back to profile
           </Link>
         </div>
@@ -219,7 +211,7 @@ export default function AgoraProfileEditPage() {
                   width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
                   background: BRAND.ice, border: '2px solid #E2E6F0',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, fontWeight: 600, fontFamily: 'DM Sans, sans-serif', color: BRAND.navy,
+                  fontSize: 20, fontWeight: 600, fontFamily: 'DM Sans, sans-serif', color: BRAND.midnight,
                 }}>
                   {avatarUrl
                     ? <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -231,7 +223,7 @@ export default function AgoraProfileEditPage() {
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploading}
-                    style={{ padding: '8px 16px', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', borderRadius: '8px', border: `1.5px solid ${BRAND.electric}`, background: BRAND.ice, color: BRAND.navy, cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.6 : 1 }}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', borderRadius: '8px', border: `1.5px solid ${BRAND.meadowText}`, background: BRAND.ice, color: BRAND.midnight, cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.6 : 1 }}
                   >
                     {uploading ? 'Uploading…' : avatarUrl ? 'Change photo' : 'Upload photo'}
                   </button>
@@ -287,13 +279,13 @@ export default function AgoraProfileEditPage() {
                   {currentValuation && (
                     <div style={{
                       marginBottom: '10px', padding: '10px 14px', borderRadius: '8px',
-                      background: '#FFFBEB', border: `1px solid ${BRAND.voltage}55`,
+                      background: '#F7F1E8', border: `1px solid ${BRAND.warning}55`,
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     }}>
-                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#92400E' }}>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.warning }}>
                         Calculator estimate: {fmt(currentValuation.low_value)} – {fmt(currentValuation.high_value)}
                       </span>
-                      <Link href="/register?step=valuation" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.electric, textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: '12px' }}>
+                      <Link href="/register?step=valuation" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.meadowText, textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: '12px' }}>
                         Recalculate →
                       </Link>
                     </div>
@@ -359,7 +351,7 @@ export default function AgoraProfileEditPage() {
           </SectionCard>
 
           {error && (
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: '#DC2626', marginBottom: '1rem' }}>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.danger, marginBottom: '1rem' }}>
               {error}
             </p>
           )}
@@ -372,10 +364,10 @@ export default function AgoraProfileEditPage() {
             type="submit"
             disabled={submitting || saved}
             style={{
-              width: '100%', padding: '14px', fontSize: '14px', fontWeight: 500,
+              width: '100%', padding: '14px', fontSize: '14px', fontWeight: 700,
               fontFamily: 'DM Sans, sans-serif', borderRadius: '8px', border: 'none',
-              background: (submitting || saved) ? '#d1d5db' : BRAND.electric,
-              color: (submitting || saved) ? '#9ca3af' : 'white',
+              background: (submitting || saved) ? '#d1d5db' : BRAND.meadow,
+              color: (submitting || saved) ? '#9ca3af' : BRAND.midnight,
               cursor: (submitting || saved) ? 'not-allowed' : 'pointer',
             }}
           >
@@ -405,7 +397,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
       {label && (
         <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500, color: BRAND.midnight, marginBottom: '8px' }}>
           {label}
-          {required && <span style={{ color: '#DC2626', marginLeft: '3px' }}>*</span>}
+          {required && <span style={{ color: BRAND.danger, marginLeft: '3px' }}>*</span>}
         </label>
       )}
       {children}
@@ -417,9 +409,9 @@ function ToggleChip({ label, active, onClick }: { label: string; active: boolean
   return (
     <button type="button" onClick={onClick} style={{
       padding: '8px 14px', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', borderRadius: '8px',
-      border: active ? `2px solid ${BRAND.electric}` : '1.5px solid #d1d5db',
+      border: active ? `2px solid ${BRAND.meadowText}` : '1.5px solid #d1d5db',
       background: active ? BRAND.ice : 'white',
-      color: active ? BRAND.navy : '#6b7280',
+      color: active ? BRAND.midnight : '#6b7280',
       cursor: 'pointer', fontWeight: active ? 500 : 400,
     }}>
       {label}
@@ -449,7 +441,7 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
         width: '100%', padding: '11px 14px', fontSize: '14px',
         fontFamily: 'DM Sans, sans-serif',
         borderRadius: open ? '8px 8px 0 0' : '8px',
-        border: open ? `1.5px solid ${BRAND.electric}` : '1.5px solid #d1d5db',
+        border: open ? `1.5px solid ${BRAND.meadowText}` : '1.5px solid #d1d5db',
         background: 'white', cursor: 'pointer',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
@@ -459,7 +451,7 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
       {open && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0,
-          background: 'white', border: `1.5px solid ${BRAND.electric}`, borderTop: 'none',
+          background: 'white', border: `1.5px solid ${BRAND.meadowText}`, borderTop: 'none',
           borderRadius: '0 0 8px 8px', zIndex: 50, maxHeight: '220px', overflowY: 'auto',
           boxShadow: '0 4px 12px rgba(0,0,0,.06)',
         }}>
@@ -475,13 +467,13 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
               }}>
                 <span style={{
                   width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-                  border: active ? `2px solid ${BRAND.electric}` : '1.5px solid #d1d5db',
-                  background: active ? BRAND.electric : 'white',
+                  border: active ? `2px solid ${BRAND.meadowText}` : '1.5px solid #d1d5db',
+                  background: active ? BRAND.meadow : 'white',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {active && (
                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M1 4l3 3 5-6" stroke={BRAND.midnight} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                 </span>
@@ -497,11 +489,11 @@ function MultiSelect({ options, selected, onToggle, placeholder }: {
             <span key={s} style={{
               display: 'inline-flex', alignItems: 'center',
               padding: '4px 10px', fontSize: '12px', fontFamily: 'DM Sans, sans-serif',
-              borderRadius: '20px', background: BRAND.ice, color: BRAND.navy,
-              border: `1px solid ${BRAND.electric}`, fontWeight: 500,
+              borderRadius: '20px', background: BRAND.ice, color: BRAND.midnight,
+              fontWeight: 500,
             }}>
               {s}
-              <button type="button" onClick={() => onToggle(s)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 6px', color: BRAND.electric, fontSize: '14px', lineHeight: 1 }}>×</button>
+              <button type="button" onClick={() => onToggle(s)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 0 6px', color: BRAND.meadowText, fontSize: '14px', lineHeight: 1 }}>×</button>
             </span>
           ))}
         </div>

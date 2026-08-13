@@ -1,15 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-  voltage: '#E8C547',
-}
+import { BRAND } from '@/lib/brand'
 
 export type ProfileData = {
   profile: {
@@ -62,8 +54,8 @@ function StatPill({ label, value, highlight }: { label: string; value: string; h
   return (
     <div style={{
       display: 'inline-flex', flexDirection: 'column', padding: '8px 12px', borderRadius: '8px',
-      background: highlight ? '#FEF9EC' : '#F9FAFB',
-      border: highlight ? `1px solid ${BRAND.voltage}` : '1px solid #F0F1F4',
+      background: highlight ? 'oklch(80% 0.28 145 / 0.12)' : '#F9FAFB',
+      border: highlight ? `1px solid ${BRAND.meadowText}` : '1px solid #F0F1F4',
     }}>
       {label && <span style={{ fontSize: '10px', color: '#9CA3AF', fontFamily: 'DM Sans, sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>{label}</span>}
       <span style={{ fontSize: '13px', fontWeight: 500, color: BRAND.midnight, fontFamily: 'DM Sans, sans-serif' }}>{value}</span>
@@ -102,7 +94,7 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
           <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.midnight, fontWeight: 500 }}>
             This is how your listing appears to others in the marketplace.
           </span>
-          <Link href="/profile/edit" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.electric, textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: '1rem' }}>
+          <Link href="/profile/edit" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.meadowText, textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: '1rem' }}>
             Edit profile →
           </Link>
         </div>
@@ -119,7 +111,7 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
               {/* Avatar */}
               <div style={{
                 width: '56px', height: '56px', borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-                background: BRAND.ice, color: BRAND.navy, border: '2px solid #E2E6F0',
+                background: BRAND.ice, color: BRAND.midnight, border: '2px solid #E2E6F0',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '16px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
               }}>
@@ -131,7 +123,7 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
 
               {/* Name + meta */}
               <div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px', fontWeight: 600, color: BRAND.midnight, lineHeight: 1.2 }}>
+                <div style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '22px', color: BRAND.midnight, lineHeight: 1.2 }}>
                   {profile.name}
                 </div>
                 {profile.account_type === 'corporation' && details.entity_name && (
@@ -149,9 +141,8 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
             <span style={{
               padding: '5px 12px', fontSize: '11px', fontWeight: 500,
               fontFamily: 'DM Sans, sans-serif', borderRadius: '20px', whiteSpace: 'nowrap',
-              background: isSeller ? '#FEF9EC' : BRAND.ice,
-              color: isSeller ? '#92400E' : BRAND.navy,
-              border: `1px solid ${isSeller ? BRAND.voltage : BRAND.electric}`,
+              background: isSeller ? BRAND.meadow : BRAND.ice,
+              color: BRAND.midnight,
             }}>
               {isSeller ? 'Selling' : 'Acquiring'}
             </span>
@@ -181,17 +172,17 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
           {valuation && (
             <div style={{
               marginTop: '1rem', padding: '12px 14px', borderRadius: '10px',
-              background: '#FFFBEB', border: `1px solid ${BRAND.voltage}55`,
+              background: '#F7F1E8', border: `1px solid ${BRAND.warning}55`,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', fontWeight: 600, color: '#92400E', letterSpacing: '.06em', textTransform: 'uppercase' }}>
+                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', fontWeight: 600, color: BRAND.warning, letterSpacing: '.06em', textTransform: 'uppercase' }}>
                   Estimated value range
                 </span>
                 <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: 600, color: BRAND.midnight }}>
                   {formatMoney(valuation.low_value)} – {formatMoney(valuation.high_value)}
                 </span>
               </div>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: '#92400E', opacity: 0.75, margin: 0 }}>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: BRAND.warning, opacity: 0.85, margin: 0 }}>
                 Self-reported estimate. Not verified by Klarum or any third party.
               </p>
             </div>
@@ -228,8 +219,8 @@ export function AgoraProfileView({ data, isSelf }: { data: ProfileData; isSelf: 
             <div style={{ marginTop: '0.5rem', paddingTop: '1.25rem', borderTop: '1px solid #F3F4F6' }}>
               <Link href={`/inbox/new?to=${profile.id}`} style={{
                 display: 'inline-block', padding: '10px 20px',
-                background: BRAND.midnight, color: 'white', borderRadius: '8px',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500,
+                background: BRAND.meadow, color: BRAND.midnight, borderRadius: '8px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 700,
                 textDecoration: 'none',
               }}>
                 Send a message

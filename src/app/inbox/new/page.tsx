@@ -5,14 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import AgoraNav from '@/components/AgoraNav'
 import Link from 'next/link'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-}
+import { BRAND } from '@/lib/brand'
 
 function ComposeForm() {
   const router = useRouter()
@@ -78,8 +71,8 @@ function ComposeForm() {
 
   if (loadError) return (
     <div style={{ maxWidth: '680px', margin: '0 auto', padding: '3rem 1.5rem' }}>
-      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: '#DC2626' }}>{loadError}</p>
-      <Link href="/inbox" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.electric }}>
+      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: BRAND.danger }}>{loadError}</p>
+      <Link href="/inbox" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: BRAND.meadowText }}>
         ← Back to inbox
       </Link>
     </div>
@@ -91,7 +84,7 @@ function ComposeForm() {
         ← Inbox
       </Link>
 
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '22px', fontWeight: 600, color: BRAND.midnight, margin: '0 0 1.75rem 0' }}>
+      <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '24px', color: BRAND.midnight, margin: '0 0 1.75rem 0' }}>
         New message to {recipientName}
       </h1>
 
@@ -139,7 +132,7 @@ function ComposeForm() {
           </div>
 
           {sendError && (
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#DC2626', margin: '0 0 14px' }}>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.danger, margin: '0 0 14px' }}>
               {sendError}
             </p>
           )}
@@ -150,8 +143,8 @@ function ComposeForm() {
               type="submit"
               disabled={sending || !body.trim()}
               style={{
-                background: body.trim() ? BRAND.electric : '#E5E7EB',
-                color: body.trim() ? 'white' : '#9CA3AF',
+                background: body.trim() ? BRAND.meadow : '#E5E7EB',
+                color: body.trim() ? BRAND.midnight : '#9CA3AF',
                 border: 'none', borderRadius: '8px', padding: '10px 22px',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
                 cursor: body.trim() ? 'pointer' : 'default',

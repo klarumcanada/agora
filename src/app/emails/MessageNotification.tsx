@@ -24,8 +24,8 @@ export default function MessageNotification({
 
           {/* Logo bar */}
           <Section style={{ marginBottom: '24px' }}>
-            <Text style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', color: '#0D1B3E', margin: 0 }}>
-              KLARUM · AGORA
+            <Text style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em', color: '#0D1B3E', margin: 0 }}>
+              agora
             </Text>
           </Section>
 
@@ -36,7 +36,7 @@ export default function MessageNotification({
             border: '1px solid #E2E6F0',
             padding: '36px 40px',
           }}>
-            <Text style={{ fontSize: '20px', fontWeight: 600, color: '#0D1B3E', margin: '0 0 8px 0', fontFamily: 'Georgia, serif' }}>
+            <Text style={{ fontSize: '20px', fontStyle: 'italic', fontWeight: 400, color: '#0D1B3E', margin: '0 0 8px 0', fontFamily: 'Georgia, serif' }}>
               New message from {fromName}
             </Text>
 
@@ -50,7 +50,7 @@ export default function MessageNotification({
 
             {/* Message preview */}
             <Section style={{
-              borderLeft: '3px solid #3B82F6',
+              borderLeft: '3px solid #16803D',
               paddingLeft: '16px',
               margin: '0 0 28px 0',
             }}>
@@ -62,12 +62,12 @@ export default function MessageNotification({
             <Button
               href={inboxUrl}
               style={{
-                backgroundColor: '#0D1B3E',
-                color: '#ffffff',
+                backgroundColor: '#4ADE80',
+                color: '#0D1B3E',
                 padding: '12px 24px',
                 borderRadius: '8px',
                 fontSize: '13px',
-                fontWeight: 600,
+                fontWeight: 700,
                 textDecoration: 'none',
                 display: 'inline-block',
               }}
@@ -79,7 +79,7 @@ export default function MessageNotification({
           {/* Footer */}
           <Section style={{ marginTop: '24px' }}>
             <Text style={{ fontSize: '12px', color: '#9CA3AF', textAlign: 'center', margin: 0 }}>
-              Agora by Klarum · You&#39;re receiving this because someone messaged you on the platform.
+              You&#39;re receiving this because someone messaged you on Agora.
             </Text>
           </Section>
 

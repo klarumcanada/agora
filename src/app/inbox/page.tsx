@@ -5,14 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import AgoraNav from '@/components/AgoraNav'
 import Link from 'next/link'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-}
+import { BRAND } from '@/lib/brand'
 
 type Thread = {
   id: string
@@ -86,11 +79,11 @@ export default function AgoraInboxPage() {
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '26px', fontWeight: 600, color: BRAND.midnight, margin: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '28px', color: BRAND.midnight, margin: 0 }}>
             Messages
             {unreadCount > 0 && (
               <span style={{
-                marginLeft: '10px', background: BRAND.electric, color: 'white',
+                marginLeft: '10px', background: BRAND.meadow, color: BRAND.midnight,
                 fontSize: '12px', fontWeight: 700, borderRadius: '100px',
                 padding: '2px 8px', fontFamily: 'DM Sans, sans-serif', verticalAlign: 'middle',
               }}>
@@ -99,8 +92,8 @@ export default function AgoraInboxPage() {
             )}
           </h1>
           <Link href="/inbox/new" style={{
-            fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 500,
-            color: 'white', background: BRAND.electric, padding: '8px 16px',
+            fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 700,
+            color: BRAND.midnight, background: BRAND.meadow, padding: '8px 16px',
             borderRadius: '8px', textDecoration: 'none',
           }}>
             + New message
@@ -129,14 +122,14 @@ export default function AgoraInboxPage() {
                     display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
                     textAlign: 'left', background: 'white', borderRadius: '12px',
                     border: '1px solid #E2E6F0',
-                    borderLeft: isUnread ? `3px solid ${BRAND.electric}` : '3px solid transparent',
+                    borderLeft: isUnread ? `3px solid ${BRAND.meadowText}` : '3px solid transparent',
                     padding: '14px 16px', cursor: 'pointer',
                   }}
                 >
                   {/* Avatar */}
                   <div style={{
                     width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                    background: BRAND.ice, color: BRAND.navy,
+                    background: BRAND.ice, color: BRAND.midnight,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '13px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
                   }}>
@@ -183,7 +176,7 @@ export default function AgoraInboxPage() {
                           </span>
                         )}
                         {isUnread && (
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND.electric, flexShrink: 0 }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND.meadow, flexShrink: 0 }} />
                         )}
                       </div>
                     </div>

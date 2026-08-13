@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import AgoraNav from '@/components/AgoraNav'
 import { AgoraProfileView, ProfileData } from '../_components/ProfileView'
-
-const BRAND = { chalk: '#F8F7F4' }
+import { BRAND } from '@/lib/brand'
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()

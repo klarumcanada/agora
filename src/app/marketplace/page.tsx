@@ -3,15 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-  voltage: '#E8C547',
-}
+import { BRAND } from '@/lib/brand'
 
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT']
 
@@ -295,7 +287,7 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
   const bookValue = d.aum_cad ?? d.aggregate_aum_cad ?? null
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
-      <div style={{ borderLeft: `3px solid ${BRAND.voltage}`, paddingLeft: '12px', marginBottom: '1rem' }}>
+      <div style={{ borderLeft: `3px solid ${BRAND.meadowText}`, paddingLeft: '12px', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <Avatar name={profile.name} url={profile.avatar_url} />
@@ -309,8 +301,8 @@ function SellerCard({ profile }: { profile: AgoraProfile }) {
                   padding: '1px 7px', fontSize: '10px', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
                   borderRadius: '20px', whiteSpace: 'nowrap',
                   background: profile.account_type === 'corporation' ? BRAND.ice : '#F3F4F6',
-                  color: profile.account_type === 'corporation' ? BRAND.navy : '#6B7280',
-                  border: `1px solid ${profile.account_type === 'corporation' ? BRAND.electric : '#E5E7EB'}`,
+                  color: profile.account_type === 'corporation' ? BRAND.midnight : '#6B7280',
+                  border: `1px solid ${profile.account_type === 'corporation' ? '#DBEAFE' : '#E5E7EB'}`,
                 }}>
                   {profile.account_type === 'corporation' ? 'Corporation' : 'Individual'}
                 </span>
@@ -348,7 +340,7 @@ function BuyerCard({ profile }: { profile: AgoraProfile }) {
   const d = profile.details
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
-      <div style={{ borderLeft: `3px solid ${BRAND.electric}`, paddingLeft: '12px', marginBottom: '1rem' }}>
+      <div style={{ borderLeft: '3px solid #CBD5E1', paddingLeft: '12px', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <Avatar name={profile.name} url={profile.avatar_url} />
@@ -395,9 +387,9 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
     <button onClick={onClick} style={{
       display: 'inline-block', margin: '3px', padding: '5px 10px', fontSize: '12px',
       fontFamily: 'DM Sans, sans-serif', borderRadius: '20px', cursor: 'pointer',
-      border: active ? `1.5px solid ${BRAND.electric}` : '1.5px solid #E2E6F0',
+      border: active ? `1.5px solid ${BRAND.meadowText}` : '1.5px solid #E2E6F0',
       background: active ? BRAND.ice : 'white',
-      color: active ? BRAND.navy : '#6B7280',
+      color: active ? BRAND.midnight : '#6B7280',
       fontWeight: active ? 500 : 400,
     }}>
       {label}
@@ -409,8 +401,8 @@ function StatPill({ label, value, highlight }: { label: string; value: string; h
   return (
     <div style={{
       display: 'inline-flex', flexDirection: 'column', padding: '6px 10px', borderRadius: '8px',
-      background: highlight ? '#FEF9EC' : '#F9FAFB',
-      border: highlight ? `1px solid ${BRAND.voltage}` : '1px solid #F0F1F4',
+      background: highlight ? 'oklch(80% 0.28 145 / 0.12)' : '#F9FAFB',
+      border: highlight ? `1px solid ${BRAND.meadowText}` : '1px solid #F0F1F4',
     }}>
       {label && <span style={{ fontSize: '10px', color: '#9CA3AF', fontFamily: 'DM Sans, sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>{label}</span>}
       <span style={{ fontSize: '12px', fontWeight: 500, color: BRAND.midnight, fontFamily: 'DM Sans, sans-serif' }}>{value}</span>
@@ -425,12 +417,12 @@ const cardStyle: React.CSSProperties = {
 }
 const avatarStyle: React.CSSProperties = {
   width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
-  background: BRAND.ice, color: BRAND.navy, overflow: 'hidden',
+  background: BRAND.ice, color: BRAND.midnight, overflow: 'hidden',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontSize: '13px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
 }
 const cardNameStyle: React.CSSProperties = {
-  fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: BRAND.midnight,
+  fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, color: BRAND.midnight,
 }
 const cardSubStyle: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: '#9CA3AF',
@@ -445,21 +437,21 @@ const tagValueStyle: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.midnight, lineHeight: 1.5,
 }
 const sellerBadge: React.CSSProperties = {
-  padding: '3px 9px', fontSize: '10px', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
-  borderRadius: '20px', background: '#FEF9EC', color: '#92400E',
-  border: `1px solid ${BRAND.voltage}`, whiteSpace: 'nowrap',
+  padding: '3px 9px', fontSize: '10px', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
+  borderRadius: '20px', background: BRAND.meadow, color: BRAND.midnight,
+  whiteSpace: 'nowrap',
 }
 const buyerBadge: React.CSSProperties = {
   padding: '3px 9px', fontSize: '10px', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
-  borderRadius: '20px', background: BRAND.ice, color: BRAND.navy,
-  border: `1px solid ${BRAND.electric}`, whiteSpace: 'nowrap',
+  borderRadius: '20px', background: BRAND.ice, color: BRAND.midnight,
+  whiteSpace: 'nowrap',
 }
 const filterHeaderStyle: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
   color: BRAND.midnight, letterSpacing: '.04em', textTransform: 'uppercase',
 }
 const clearBtnStyle: React.CSSProperties = {
-  background: 'none', border: 'none', fontSize: '12px', color: BRAND.electric,
+  background: 'none', border: 'none', fontSize: '12px', color: BRAND.meadowText,
   cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
 }
 const selectStyle: React.CSSProperties = {

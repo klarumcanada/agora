@@ -9,9 +9,12 @@
 :root {
   --navy: #1A3266;
   --midnight: #0D1B3E;
-  --electric: #3B82F6;
+  --electric: #3B82F6; /* Klarum's reserved accent — do not use in Agora product UI except an explicit "Powered by Klarum" credit */
   --electric-light: #DBEAFE;
-  --voltage: #E8C547;
+  --meadow: oklch(80% 0.28 145);       /* fill — CTAs, "A" badge, status pills. Always pair with Midnight text on top. */
+  --meadow-text: oklch(50% 0.18 145);  /* text/link/focus-ring variant — the bright fill fails contrast as text */
+  --ice: #DBEAFE;                       /* accent light / selected rows — Midnight text on top, never Navy */
+  --voltage: #E8C547;                   /* highlight only — never a fill, never a background, at most once per screen */
   --sky: #EFF6FF;
   --white: #FFFFFF;
   --chalk: #F8F7F4;
@@ -19,7 +22,9 @@
   --gray-300: #CBD5E1;
   --gray-500: #64748B;
   --gray-700: #334155;
-  --serif: var(--font-serif), Georgia, serif;
+  --danger: #9A5B52;   /* placeholder — no destructive red defined in the brand toolkit yet, flagged for design */
+  --warning: #A98A4E;  /* placeholder — no warning amber defined in the brand toolkit yet, flagged for design */
+  --serif: var(--font-serif), Georgia, serif; /* DM Serif Display, italic only — high-signal headline moments only */
   --sans: var(--font-sans), system-ui, sans-serif;
 }
 
@@ -66,34 +71,11 @@ body {
 }
 
 .mga-logo-wordmark {
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: -0.01em;
-}
-
-.mga-logo-product-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.mga-logo-rule {
-  width: 16px;
-  height: 1px;
-  background: var(--electric);
-  opacity: 0.6;
-}
-
-.mga-logo-product {
   font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--electric);
-  opacity: 0.85;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--chalk);
+  letter-spacing: -0.01em;
 }
 
 .mga-nav-links {

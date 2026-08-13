@@ -5,14 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
-
-const BRAND = {
-  midnight: '#0D1B3E',
-  navy: '#1A3266',
-  electric: '#3B82F6',
-  ice: '#DBEAFE',
-  chalk: '#F8F7F4',
-}
+import { BRAND } from '@/lib/brand'
 
 type RawMessage = {
   id: string
@@ -154,7 +147,7 @@ export default function AgoraThreadPage() {
         </Link>
 
         <div style={{ marginBottom: '1.75rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '22px', fontWeight: 600, color: BRAND.midnight, margin: '0 0 4px 0' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '24px', color: BRAND.midnight, margin: '0 0 4px 0' }}>
             {otherName}
           </h1>
           {subject && (
@@ -182,8 +175,8 @@ export default function AgoraThreadPage() {
                 }}>
                   <div style={{
                     width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                    background: isMe ? BRAND.electric : '#E2E6F0',
-                    color: isMe ? 'white' : BRAND.midnight,
+                    background: isMe ? BRAND.meadow : '#E2E6F0',
+                    color: BRAND.midnight,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '11px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
                   }}>
@@ -193,7 +186,7 @@ export default function AgoraThreadPage() {
                   <div>
                     <div style={{
                       background: isMe ? BRAND.ice : 'white',
-                      border: isMe ? `1px solid ${BRAND.electric}44` : '1px solid #E2E6F0',
+                      border: isMe ? '1px solid oklch(50% 0.18 145 / 0.27)' : '1px solid #E2E6F0',
                       borderRadius: isMe ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
                       padding: '12px 16px',
                       fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
@@ -239,7 +232,7 @@ export default function AgoraThreadPage() {
                 }}
               />
               {sendError && (
-                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#DC2626', margin: '4px 0 6px' }}>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: BRAND.danger, margin: '4px 0 6px' }}>
                   {sendError}
                 </p>
               )}
@@ -249,8 +242,8 @@ export default function AgoraThreadPage() {
                   onClick={sendReply}
                   disabled={sending || !replyBody.trim()}
                   style={{
-                    background: replyBody.trim() ? BRAND.electric : '#E5E7EB',
-                    color: replyBody.trim() ? 'white' : '#9CA3AF',
+                    background: replyBody.trim() ? BRAND.meadow : '#E5E7EB',
+                    color: replyBody.trim() ? BRAND.midnight : '#9CA3AF',
                     border: 'none', borderRadius: '8px', padding: '8px 18px',
                     fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
                     cursor: replyBody.trim() ? 'pointer' : 'default',

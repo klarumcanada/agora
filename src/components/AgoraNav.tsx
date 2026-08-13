@@ -41,19 +41,13 @@ export default function AgoraNav() {
       <div className="mga-nav-left">
         <Link href="/marketplace" className="mga-logo">
           <div className="mga-logo-parent">
-            <svg width="24" height="16" viewBox="0 0 44 30" fill="none">
-              <rect x="1" y="1" width="3.5" height="28" fill="white" opacity="0.6" />
-              <path d="M4.5 15 L18 1" stroke="white" strokeWidth="3" strokeLinecap="square" opacity="0.6" />
-              <path d="M4.5 15 L18 29" stroke="white" strokeWidth="3" strokeLinecap="square" opacity="0.6" />
-              <line x1="18" y1="4" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.2" />
-              <line x1="18" y1="26" x2="34" y2="15" stroke="white" strokeWidth="0.75" opacity="0.2" />
-              <circle cx="34" cy="15" r="7" fill="#3B82F6" />
+            <svg width="22" height="22" viewBox="0 0 100 100" aria-hidden="true">
+              <path d="M33 44 C33 20 67 20 67 44" fill="none" stroke="#F8F7F4" strokeWidth="7" />
+              <path d="M20 44 H80 L70 84 H30 Z" fill="none" stroke="#F8F7F4" strokeWidth="7" strokeLinejoin="round" />
+              <circle cx="70" cy="74" r="19" fill="oklch(80% 0.28 145)" />
+              <text x="70" y="82" fontFamily="'DM Sans', sans-serif" fontWeight="700" fontSize="24" fill="#0D1B3E" textAnchor="middle">A</text>
             </svg>
-            <span className="mga-logo-wordmark">klarum</span>
-          </div>
-          <div className="mga-logo-product-row">
-            <div className="mga-logo-rule" />
-            <span className="mga-logo-product">Agora</span>
+            <span className="mga-logo-wordmark">agora</span>
           </div>
         </Link>
       </div>
@@ -102,6 +96,12 @@ export default function AgoraNav() {
               >
                 Sign out
               </button>
+              <div style={{
+                padding: '9px 16px', borderTop: '1px solid #F3F4F6',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: '#9CA3AF',
+              }}>
+                Powered by klarum<span style={{ color: '#3B82F6' }}>.</span>
+              </div>
             </div>
           )}
         </div>

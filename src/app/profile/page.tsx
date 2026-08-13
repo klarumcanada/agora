@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react'
 import AgoraNav from '@/components/AgoraNav'
 import { AgoraProfileView, ProfileData } from './_components/ProfileView'
-
-const BRAND = { chalk: '#F8F7F4', midnight: '#0D1B3E' }
+import { BRAND } from '@/lib/brand'
 
 export default function OwnProfilePage() {
   const [data, setData] = useState<ProfileData | null>(null)
