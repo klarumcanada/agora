@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
 import { BRAND } from '@/lib/brand'
@@ -76,6 +77,7 @@ function getInitials(name: string) {
 }
 
 export default function AgoraMarketplacePage() {
+  const router = useRouter()
   const [profiles, setProfiles] = useState<AgoraProfile[]>([])
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [myRole, setMyRole] = useState<'buyer' | 'seller' | null>(null)
@@ -110,12 +112,14 @@ export default function AgoraMarketplacePage() {
       fetch('/agora/api/saves'),
     ])
 
+    if (res.status === 401) { router.push('/login'); return }
+
     const [data, savesData] = await Promise.all([res.json(), savesRes.json()])
     setProfiles(data.profiles ?? [])
     if (data.myRole) setMyRole(data.myRole)
     setSavedIds(savesData.saved ?? [])
     setLoading(false)
-  }, [province, selectedProducts, selectedCarriers, bookValueRange, budgetRange, exitTimeline, acqTimeline, entityType])
+  }, [province, selectedProducts, selectedCarriers, bookValueRange, budgetRange, exitTimeline, acqTimeline, entityType, router])
 
   useEffect(() => { fetchProfiles() }, [fetchProfiles])
 

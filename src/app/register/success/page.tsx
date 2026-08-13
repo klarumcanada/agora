@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AgoraWordmark from '@/components/AgoraWordmark'
 
 export default function RegisterSuccessPage() {
   return (
@@ -11,23 +12,7 @@ export default function RegisterSuccessPage() {
       justifyContent: 'center',
       padding: '24px',
     }}>
-      <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '32px' }}>
-        <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M33 44 C33 20 67 20 67 44" fill="none" stroke="#F8F7F4" strokeWidth="7" />
-          <path d="M20 44 H80 L70 84 H30 Z" fill="none" stroke="#F8F7F4" strokeWidth="7" strokeLinejoin="round" />
-          <circle cx="70" cy="74" r="19" fill="oklch(80% 0.28 145)" />
-          <text x="70" y="82" fontFamily="'DM Sans', sans-serif" fontWeight="700" fontSize="24" fill="#0D1B3E" textAnchor="middle">A</text>
-        </svg>
-        <span style={{
-          fontFamily: 'var(--font-sans), DM Sans, sans-serif',
-          fontSize: '22px',
-          fontWeight: 700,
-          color: 'white',
-          letterSpacing: '-0.01em',
-        }}>
-          agora
-        </span>
-      </Link>
+      <AgoraWordmark href="/login" />
 
       <div style={{
         width: '100%',
@@ -73,11 +58,11 @@ export default function RegisterSuccessPage() {
           lineHeight: 1.65,
           marginBottom: '32px',
         }}>
-          Your account is set up. Check your email to confirm your address, then head to the marketplace.
+          Your account is set up. Check your email to confirm your address, then sign in to get started.
         </p>
 
         <Link
-          href="/marketplace"
+          href="/login"
           style={{
             display: 'block',
             width: '100%',
@@ -93,7 +78,7 @@ export default function RegisterSuccessPage() {
             boxSizing: 'border-box',
           }}
         >
-          Go to marketplace
+          Go to sign in
         </Link>
       </div>
     </div>

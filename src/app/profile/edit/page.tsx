@@ -77,6 +77,7 @@ export default function AgoraProfileEditPage() {
         fetch('/agora/api/profile'),
         supabase.auth.getUser(),
       ])
+      if (res.status === 401) { router.push('/login'); return }
       const data = await res.json()
       if (data.error) { setError(data.error); setLoading(false); return }
 

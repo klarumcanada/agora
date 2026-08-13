@@ -1,25 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import AgoraNav from '@/components/AgoraNav'
 import { AgoraProfileView, ProfileData } from './_components/ProfileView'
 import { BRAND } from '@/lib/brand'
 
 export default function OwnProfilePage() {
+  const router = useRouter()
   const [data, setData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/agora/api/profile')
-      .then(r => r.json())
+      .then(r => {
+        if (r.status === 401) { router.push('/login'); return null }
+        return r.json()
+      })
       .then(d => {
+        if (!d) return
         if (d.error) setError(d.error)
         else setData(d)
       })
       .catch(() => setError('Failed to load profile.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [router])
 
   return (
     <div style={{ background: BRAND.chalk, minHeight: '100vh' }}>
