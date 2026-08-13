@@ -4,14 +4,12 @@ import {
 
 interface MessageNotificationProps {
   fromName: string
-  subject?: string | null
   body: string
   inboxUrl: string
 }
 
 export default function MessageNotification({
   fromName,
-  subject,
   body,
   inboxUrl,
 }: MessageNotificationProps) {
@@ -36,15 +34,9 @@ export default function MessageNotification({
             border: '1px solid #E2E6F0',
             padding: '36px 40px',
           }}>
-            <Text style={{ fontSize: '20px', fontStyle: 'italic', fontWeight: 400, color: '#0D1B3E', margin: '0 0 8px 0', fontFamily: 'Georgia, serif' }}>
+            <Text style={{ fontSize: '20px', fontStyle: 'italic', fontWeight: 400, color: '#0D1B3E', margin: '0 0 20px 0', fontFamily: 'Georgia, serif' }}>
               New message from {fromName}
             </Text>
-
-            {subject && (
-              <Text style={{ fontSize: '13px', color: '#6B7280', margin: '0 0 24px 0' }}>
-                Re: {subject}
-              </Text>
-            )}
 
             <Hr style={{ borderColor: '#E2E6F0', margin: '0 0 24px 0' }} />
 

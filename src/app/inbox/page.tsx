@@ -9,15 +9,11 @@ import { BRAND } from '@/lib/brand'
 
 type Thread = {
   id: string
-  subject: string | null
-  body: string
-  created_at: string
+  other: { id: string; name: string }
+  last_body: string
   last_activity: string
-  read_at: string | null
-  reply_count: number
+  message_count: number
   is_unread: boolean
-  from: { id: string; name: string }
-  to: { id: string; name: string }
 }
 
 function timeAgo(iso: string) {
@@ -45,7 +41,6 @@ export default function AgoraInboxPage() {
     : createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const [threads, setThreads] = useState<Thread[]>([])
-  const [userId, setUserId] = useState<string | null>(null)
   const userIdRef = useRef<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -53,8 +48,8 @@ export default function AgoraInboxPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     userIdRef.current = user.id
-    setUserId(user.id)
     const res = await fetch('/agora/api/inbox', { cache: 'no-store' })
+    if (res.status === 401) { router.push('/login'); return }
     const data = await res.json()
     setThreads(Array.isArray(data) ? data : [])
     setLoading(false)
@@ -70,7 +65,6 @@ export default function AgoraInboxPage() {
     return () => window.removeEventListener('focus', onFocus)
   }, [])
 
-  const uid = userIdRef.current ?? userId
   const unreadCount = threads.filter(t => t.is_unread).length
 
   return (
@@ -111,7 +105,6 @@ export default function AgoraInboxPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {threads.map(thread => {
-              const other = thread.from.id === uid ? thread.to : thread.from
               const isUnread = thread.is_unread
 
               return (
@@ -133,7 +126,7 @@ export default function AgoraInboxPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '13px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
                   }}>
-                    {initials(other.name)}
+                    {initials(thread.other.name)}
                   </div>
 
                   {/* Content */}
@@ -144,35 +137,27 @@ export default function AgoraInboxPage() {
                         fontWeight: isUnread ? 600 : 400, color: BRAND.midnight,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
-                        {other.name}
+                        {thread.other.name}
                       </span>
                       <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: '#9CA3AF', flexShrink: 0, marginLeft: '12px' }}>
                         {timeAgo(thread.last_activity)}
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ minWidth: 0 }}>
-                        <span style={{
-                          fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
-                          fontWeight: isUnread ? 500 : 400, color: isUnread ? BRAND.midnight : '#6B7280',
-                          display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
-                          {thread.subject ?? 'No subject'}
-                        </span>
-                        <span style={{
-                          fontFamily: 'DM Sans, sans-serif', fontSize: '12px', color: '#9CA3AF',
-                          display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
-                          {thread.body.length > 72 ? thread.body.slice(0, 72) + '…' : thread.body}
-                        </span>
-                      </div>
+                      <span style={{
+                        fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
+                        fontWeight: isUnread ? 500 : 400, color: isUnread ? BRAND.midnight : '#6B7280',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+                      }}>
+                        {thread.last_body.length > 72 ? thread.last_body.slice(0, 72) + '…' : thread.last_body}
+                      </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '12px' }}>
-                        {thread.reply_count > 0 && (
+                        {thread.message_count > 1 && (
                           <span style={{
                             fontFamily: 'DM Sans, sans-serif', fontSize: '11px', color: '#6B7280',
                             background: '#F3F4F6', borderRadius: '100px', padding: '2px 7px',
                           }}>
-                            {thread.reply_count + 1}
+                            {thread.message_count}
                           </span>
                         )}
                         {isUnread && (

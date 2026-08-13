@@ -2,25 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 import AgoraNav from '@/components/AgoraNav'
 import { BRAND } from '@/lib/brand'
 
 type RawMessage = {
   id: string
-  from_id: string
-  to_id: string
-  subject: string | null
+  conversation_id: string
+  sender_id: string
   body: string
   created_at: string
   read_at: string | null
-  parent_id: string | null
-}
-
-type Profile = {
-  id: string
-  name: string
 }
 
 function formatTime(iso: string) {
@@ -41,68 +33,49 @@ export default function AgoraThreadPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
 
-  const supabase = typeof window === 'undefined'
-    ? (null as unknown as ReturnType<typeof createBrowserClient>)
-    : createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-
   const [messages, setMessages] = useState<RawMessage[]>([])
-  const [nameMap, setNameMap] = useState<Record<string, string>>({})
   const [userId, setUserId] = useState<string | null>(null)
-  const [otherId, setOtherId] = useState<string | null>(null)
-  const [subject, setSubject] = useState<string | null>(null)
+  const [other, setOther] = useState<{ id: string; name: string } | null>(null)
   const [replyBody, setReplyBody] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-      setUserId(user.id)
-
-      const [{ data: root }, { data: replies }] = await Promise.all([
-        supabase.from('agora_messages').select('*').eq('id', id).single(),
-        supabase.from('agora_messages').select('*').eq('parent_id', id).order('created_at', { ascending: true }),
+      const [res] = await Promise.all([
+        fetch(`/agora/api/inbox/${id}`, { cache: 'no-store' }),
         fetch(`/agora/api/messages/${id}/read`, { method: 'POST' }),
-      ] as const)
+      ])
 
-      if (!root) { setLoading(false); return }
+      if (res.status === 401) { router.push('/login'); return }
+      if (!res.ok) { setNotFound(true); setLoading(false); return }
 
-      setSubject(root.subject)
-      const other = root.from_id === user.id ? root.to_id : root.from_id
-      setOtherId(other)
-
-      const all = [root, ...(replies ?? [])]
-      setMessages(all)
-
-      const userIds = [...new Set(all.flatMap(m => [m.from_id, m.to_id]))]
-      const { data: profiles } = await supabase
-        .from('agora_profiles')
-        .select('id, name')
-        .in('id', userIds)
-
-      setNameMap(Object.fromEntries((profiles ?? []).map((p: Profile) => [p.id, p.name])))
+      const data = await res.json()
+      setMessages(data.messages ?? [])
+      setOther(data.other ?? null)
+      setUserId(data.userId ?? null)
       setLoading(false)
     }
 
     load()
-  }, [id])
+  }, [id, router])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   async function sendReply() {
-    if (!replyBody.trim() || !otherId) return
+    if (!replyBody.trim()) return
     setSending(true)
     setSendError(null)
 
     const res = await fetch('/agora/api/inbox', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to_id: otherId, body: replyBody, parent_id: id }),
+      body: JSON.stringify({ conversation_id: id, body: replyBody }),
     })
     const data = await res.json()
     setSending(false)
@@ -125,16 +98,14 @@ export default function AgoraThreadPage() {
     </div>
   )
 
-  if (messages.length === 0) return (
+  if (notFound || !other) return (
     <div style={{ background: BRAND.chalk, minHeight: '100vh' }}>
       <AgoraNav />
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '3rem 1.5rem' }}>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: '#9CA3AF' }}>Thread not found.</p>
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: '#9CA3AF' }}>Conversation not found.</p>
       </div>
     </div>
   )
-
-  const otherName = otherId ? (nameMap[otherId] ?? 'Unknown') : 'Unknown'
 
   return (
     <div style={{ background: BRAND.chalk, minHeight: '100vh', paddingBottom: '8rem' }}>
@@ -147,21 +118,19 @@ export default function AgoraThreadPage() {
         </Link>
 
         <div style={{ marginBottom: '1.75rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '24px', color: BRAND.midnight, margin: '0 0 4px 0' }}>
-            {otherName}
+          <h1 style={{ fontFamily: 'var(--font-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 400, fontSize: '24px', color: BRAND.midnight, margin: 0 }}>
+            {other.name}
           </h1>
-          {subject && (
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '13px', color: '#9CA3AF', margin: 0 }}>
-              {subject}
-            </p>
-          )}
         </div>
 
         {/* Message bubbles */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
+          {messages.length === 0 && (
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: '#9CA3AF' }}>No messages yet.</p>
+          )}
           {messages.map(msg => {
-            const isMe = msg.from_id === userId
-            const senderName = nameMap[msg.from_id] ?? 'Unknown'
+            const isMe = msg.sender_id === userId
+            const senderName = isMe ? 'You' : other.name
 
             return (
               <div

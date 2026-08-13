@@ -17,7 +17,6 @@ function ComposeForm() {
     : createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const [recipientName, setRecipientName] = useState<string | null>(null)
-  const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
@@ -50,7 +49,7 @@ function ComposeForm() {
     const res = await fetch('/agora/api/inbox', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to_id: toId, subject: subject.trim() || null, body, parent_id: null }),
+      body: JSON.stringify({ to_id: toId, body }),
     })
     const data = await res.json()
     setSending(false)
@@ -60,7 +59,7 @@ function ComposeForm() {
       return
     }
 
-    router.push(`/inbox/${data.message.id}`)
+    router.push(`/inbox/${data.conversation_id}`)
   }
 
   if (loading) return (
@@ -93,24 +92,6 @@ function ComposeForm() {
           background: 'white', borderRadius: '12px', border: '1px solid #E2E6F0',
           padding: '28px 28px 24px',
         }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', fontWeight: 600, color: '#6B7280', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Subject
-            </label>
-            <input
-              type="text"
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-              placeholder="Optional subject line"
-              style={{
-                width: '100%', border: '1px solid #E2E6F0', borderRadius: '8px',
-                padding: '10px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-                color: BRAND.midnight, outline: 'none', boxSizing: 'border-box',
-                background: '#FAFAFA',
-              }}
-            />
-          </div>
-
           <div style={{ marginBottom: '20px' }}>
             <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '12px', fontWeight: 600, color: '#6B7280', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Message

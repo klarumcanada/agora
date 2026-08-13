@@ -3,8 +3,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+async function makeClients() {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,17 +15,20 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       },
     }
   )
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const admin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+  return { supabase, admin }
+}
 
-  // id here is a conversation_id — mark every message in it from the other
-  // participant as read, but only if the requester actually belongs to it.
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const { supabase, admin } = await makeClients()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data: conversation } = await admin
     .from('agora_conversations')
     .select('id, initiator_id, recipient_id')
@@ -37,12 +39,24 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
   }
 
-  await admin
+  const { data: messages, error } = await admin
     .from('agora_messages')
-    .update({ read_at: new Date().toISOString() })
+    .select('id, conversation_id, sender_id, body, created_at, read_at')
     .eq('conversation_id', id)
-    .neq('sender_id', user.id)
-    .is('read_at', null)
+    .order('created_at', { ascending: true })
 
-  return NextResponse.json({ success: true })
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  const otherId = conversation.initiator_id === user.id ? conversation.recipient_id : conversation.initiator_id
+  const { data: otherProfile } = await admin
+    .from('agora_profiles')
+    .select('id, name')
+    .eq('id', otherId)
+    .single()
+
+  return NextResponse.json({
+    messages: messages ?? [],
+    other: { id: otherId, name: otherProfile?.name ?? 'Unknown' },
+    userId: user.id,
+  })
 }

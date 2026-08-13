@@ -1,11 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import MessageNotification from '@/app/emails/MessageNotification'
 
-function makeSupabase(cookieStore: Awaited<ReturnType<typeof cookies>>) {
-  return createServerClient(
+async function makeClients() {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -15,101 +17,134 @@ function makeSupabase(cookieStore: Awaited<ReturnType<typeof cookies>>) {
       },
     }
   )
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  return { supabase, admin }
 }
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const supabase = makeSupabase(cookieStore)
+  const { supabase, admin } = await makeClients()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data, error } = await supabase
-    .from('agora_messages')
-    .select('id, subject, body, created_at, read_at, parent_id, from_id, to_id')
-    .or(`from_id.eq.${user.id},to_id.eq.${user.id}`)
-    .is('parent_id', null)
-    .order('created_at', { ascending: false })
+  const { data: conversations, error } = await admin
+    .from('agora_conversations')
+    .select('id, initiator_id, recipient_id, created_at')
+    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (!conversations || conversations.length === 0) return NextResponse.json([])
 
-  const allIds = [...new Set((data ?? []).flatMap(m => [m.from_id, m.to_id]))]
-  const { data: profiles } = await supabase
+  const convIds = conversations.map(c => c.id)
+  const { data: messages } = await admin
+    .from('agora_messages')
+    .select('id, conversation_id, sender_id, body, created_at, read_at')
+    .in('conversation_id', convIds)
+    .order('created_at', { ascending: true })
+
+  const otherIds = [...new Set(conversations.map(c => c.initiator_id === user.id ? c.recipient_id : c.initiator_id))]
+  const { data: profiles } = await admin
     .from('agora_profiles')
     .select('id, name')
-    .in('id', allIds)
+    .in('id', otherIds)
 
   const nameMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p.name]))
 
-  const threads = await Promise.all((data ?? []).map(async (msg) => {
-    const [{ count }, { data: latest }] = await Promise.all([
-      supabase
-        .from('agora_messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('parent_id', msg.id),
-      supabase
-        .from('agora_messages')
-        .select('created_at, read_at, from_id')
-        .eq('parent_id', msg.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ])
-
-    const last_activity = latest?.created_at ?? msg.created_at
-    const is_unread =
-      (msg.to_id === user.id && !msg.read_at) ||
-      !!(latest && latest.from_id !== user.id && !latest.read_at)
+  const threads = conversations.map(conv => {
+    const msgs = (messages ?? []).filter(m => m.conversation_id === conv.id)
+    const latest = msgs[msgs.length - 1]
+    const otherId = conv.initiator_id === user.id ? conv.recipient_id : conv.initiator_id
+    const is_unread = msgs.some(m => m.sender_id !== user.id && !m.read_at)
 
     return {
-      ...msg,
-      from: { id: msg.from_id, name: nameMap[msg.from_id] ?? 'Unknown' },
-      to:   { id: msg.to_id,   name: nameMap[msg.to_id]   ?? 'Unknown' },
-      reply_count: count ?? 0,
-      last_activity,
+      id: conv.id,
+      other: { id: otherId, name: nameMap[otherId] ?? 'Unknown' },
+      last_body: latest?.body ?? '',
+      last_activity: latest?.created_at ?? conv.created_at,
+      message_count: msgs.length,
       is_unread,
     }
-  }))
+  })
+
+  threads.sort((a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime())
 
   return NextResponse.json(threads)
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies()
-  const supabase = makeSupabase(cookieStore)
+  const { supabase, admin } = await makeClients()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { to_id, subject, body, parent_id } = await request.json()
-  if (!to_id || !body?.trim()) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  const { to_id, body, conversation_id } = await request.json()
+  if (!body?.trim() || (!conversation_id && !to_id)) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
 
-  const { data: message, error } = await supabase
+  type Conversation = { id: string; initiator_id: string; recipient_id: string }
+  let conversation: Conversation | null = null
+
+  if (conversation_id) {
+    const { data } = await admin
+      .from('agora_conversations')
+      .select('id, initiator_id, recipient_id')
+      .eq('id', conversation_id)
+      .single()
+    if (!data || (data.initiator_id !== user.id && data.recipient_id !== user.id)) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+    }
+    conversation = data
+  } else {
+    const { data: existing } = await admin
+      .from('agora_conversations')
+      .select('id, initiator_id, recipient_id')
+      .or(`and(initiator_id.eq.${user.id},recipient_id.eq.${to_id}),and(initiator_id.eq.${to_id},recipient_id.eq.${user.id})`)
+      .is('listing_id', null)
+      .maybeSingle()
+
+    if (existing) {
+      conversation = existing
+    } else {
+      const { data: created, error: convErr } = await admin
+        .from('agora_conversations')
+        .insert({ initiator_id: user.id, recipient_id: to_id })
+        .select('id, initiator_id, recipient_id')
+        .single()
+      if (convErr) return NextResponse.json({ error: convErr.message }, { status: 400 })
+      conversation = created
+    }
+  }
+
+  const { data: message, error } = await admin
     .from('agora_messages')
-    .insert({ from_id: user.id, to_id, subject: subject ?? null, body, parent_id: parent_id ?? null })
+    .insert({ conversation_id: conversation.id, sender_id: user.id, body })
     .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
+  const recipientId = conversation.initiator_id === user.id ? conversation.recipient_id : conversation.initiator_id
+
   const [{ data: sender }, { data: recipientEmail }] = await Promise.all([
-    supabase.from('agora_profiles').select('name').eq('id', user.id).single(),
-    supabase.rpc('get_user_email', { user_id: to_id }),
+    admin.from('agora_profiles').select('name').eq('id', user.id).single(),
+    admin.rpc('get_user_email', { user_id: recipientId }),
   ])
 
   if (recipientEmail) {
-    const threadId = parent_id ?? message.id
     try {
       const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: 'Agora <notifications@klarum.ca>',
         to: recipientEmail,
-        subject: subject ? `New message: ${subject}` : `${sender?.name ?? 'Someone'} sent you a message on Agora`,
+        subject: `${sender?.name ?? 'Someone'} sent you a message on Agora`,
         react: MessageNotification({
           fromName: sender?.name ?? 'An Agora user',
-          subject,
           body,
-          inboxUrl: `${process.env.NEXT_PUBLIC_APP_URL}/agora/inbox/${threadId}`,
+          inboxUrl: `${process.env.NEXT_PUBLIC_APP_URL}/agora/inbox/${conversation.id}`,
         }),
       })
     } catch (emailErr) {
@@ -117,5 +152,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ success: true, message })
+  return NextResponse.json({ success: true, message, conversation_id: conversation.id })
 }
