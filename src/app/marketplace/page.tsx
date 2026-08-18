@@ -346,7 +346,7 @@ function SellerCard({ profile, isSaved, onToggleSave }: { profile: AgoraProfile;
   const bookValue = d.book_value ?? null
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
-      <div style={{ borderLeft: `3px solid ${BRAND.meadowText}`, paddingLeft: '12px', marginBottom: '1rem' }}>
+      <div style={{ borderBottom: `3px solid ${BRAND.meadowText}`, paddingBottom: '12px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <Avatar name={displayName(profile)} url={profile.avatar_url} />
@@ -407,7 +407,7 @@ function BuyerCard({ profile, isSaved, onToggleSave }: { profile: AgoraProfile; 
   const d = profile.details
   return (
     <Link href={`/profile/${profile.id}`} style={cardStyle}>
-      <div style={{ borderLeft: '3px solid #CBD5E1', paddingLeft: '12px', marginBottom: '1rem' }}>
+      <div style={{ borderBottom: '3px solid #CBD5E1', paddingBottom: '12px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <Avatar name={displayName(profile)} url={profile.avatar_url} />
